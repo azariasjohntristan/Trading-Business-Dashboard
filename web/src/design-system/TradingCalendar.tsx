@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import type { CalendarDay } from '@/types';
 import { formatPnl } from './format';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 interface TradingCalendarProps {
   days: CalendarDay[];
@@ -26,15 +27,20 @@ export function TradingCalendar({ days, selectedDate, onSelect, showDetails = tr
   const next = () => { if (month === 11) { setYear((y) => y + 1); setMonth(0); } else setMonth((m) => m + 1); };
 
   return (
-    <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3 animate-fade-in">
+    <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3 md:p-4 animate-fade-in">
       <div className="mb-3 flex items-center justify-between">
-        <button onClick={prev} className="px-2 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors">&larr;</button>
-        <span className="text-xs font-semibold text-muted-foreground">{MONTHS[month]} {year}</span>
-        <button onClick={next} className="px-2 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors">&rarr;</button>
+        <button onClick={prev} className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+        <span className="text-sm font-semibold text-muted-foreground">{MONTHS[month]} {year}</span>
+        <button onClick={next} className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+          <ChevronRight className="h-4 w-4" />
+        </button>
       </div>
-      <div className="grid grid-cols-7 gap-px">
+
+      <div className="grid grid-cols-7 gap-1 md:gap-1.5">
         {DAYS.map((d) => (
-          <div key={d} className="py-1 text-center text-[10px] font-medium text-muted-foreground/50">{d}</div>
+          <div key={d} className="py-1 text-center text-[10px] md:text-[11px] font-medium text-muted-foreground/50">{d}</div>
         ))}
         {Array.from({ length: firstDay }).map((_, i) => <div key={`e-${i}`} />)}
         {Array.from({ length: daysInMonth }).map((_, i) => {
@@ -49,26 +55,26 @@ export function TradingCalendar({ days, selectedDate, onSelect, showDetails = tr
               key={dateStr}
               onClick={() => onSelect(dateStr)}
               className={cn(
-                'relative flex flex-col items-center rounded-sm p-1.5 text-xs transition-all',
+                'flex flex-col items-center justify-center rounded-md p-1.5 md:p-2 text-xs transition-all duration-150 min-h-[52px] md:min-h-[64px]',
                 dd ? (
                   dd.pnl >= 0
-                    ? 'bg-success/10 hover:bg-success/20'
-                    : 'bg-destructive/10 hover:bg-destructive/20'
-                ) : 'hover:bg-muted',
+                    ? 'bg-success/8 hover:bg-success/15 border border-success/15'
+                    : 'bg-destructive/8 hover:bg-destructive/15 border border-destructive/15'
+                ) : 'hover:bg-muted/50 border border-transparent',
                 isSelected && 'ring-1 ring-primary',
-                isToday && 'font-bold',
+                isToday && 'ring-1 ring-primary/50',
               )}
             >
-              <span className={cn('text-xs', isToday && 'text-primary')}>{day}</span>
+              <span className={cn('text-xs md:text-sm font-semibold leading-tight', isToday && 'text-primary')}>{day}</span>
               {dd && showDetails && (
                 <>
                   <span className={cn(
-                    'text-[9px] leading-tight font-medium',
+                    'text-[9px] md:text-[10px] leading-tight font-medium mt-0.5',
                     dd.pnl >= 0 ? 'text-success' : 'text-destructive',
                   )}>
                     {dd.pnl >= 0 ? '+' : ''}{formatPnl(dd.pnl)}
                   </span>
-                  <span className="text-[8px] text-muted-foreground/60">{dd.trades} trades</span>
+                  <span className="text-[8px] md:text-[9px] text-muted-foreground/60 leading-tight">{dd.trades} trades</span>
                 </>
               )}
             </button>

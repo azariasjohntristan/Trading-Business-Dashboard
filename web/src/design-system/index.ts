@@ -3,5 +3,6 @@ export { StatusBadge } from './StatusBadge';
 export { TradingCalendar } from './TradingCalendar';
 export { TradeCard } from './TradeCard';
 export { SectionHeader } from './SectionHeader';
+export { DailyReviewPanel } from './DailyReviewPanel';
 export { Skeleton, KpiCardSkeleton, TradeCardSkeleton } from './Skeleton';
 export { formatPnl, formatPnlShort, formatDate, formatTime } from './format';

@@ -3,6 +3,7 @@ import { apiGet, apiPost } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { TradeCard, StatusBadge, formatPnl } from '@/design-system';
+import { Search, Filter } from 'lucide-react';
 import type { Trade, Account } from '@/types';
 
 interface TradesResponse {
@@ -23,11 +24,10 @@ export default function Trades() {
   const [saving, setSaving] = useState(false);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [accountFilter, setAccountFilter] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
   const limit = 50;
 
-  useEffect(() => {
-    apiGet<Account[]>('/accounts').then(setAccounts).catch(() => {});
-  }, []);
+  useEffect(() => { apiGet<Account[]>('/accounts').then(setAccounts).catch(() => {}); }, []);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -38,11 +38,7 @@ export default function Trades() {
     if (accountFilter) params.set('accountId', accountFilter);
     params.set('sortBy', 'soldTimestamp');
     params.set('sortOrder', 'desc');
-
-    apiGet<TradesResponse>(`/trades?${params}`).then((res) => {
-      setData(res.trades);
-      setTotal(res.total);
-    }).catch(() => {});
+    apiGet<TradesResponse>(`/trades?${params}`).then((res) => { setData(res.trades); setTotal(res.total); }).catch(() => {});
   }, [page, search, directionFilter, accountFilter]);
 
   const totalPages = Math.ceil(total / limit);
@@ -53,58 +49,52 @@ export default function Trades() {
     try {
       await apiPost(`/trades/${selectedTrade.id}`, { chartLink: chartLinkInput });
       setSelectedTrade({ ...selectedTrade, chartLink: chartLinkInput });
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setSaving(false);
-    }
+    } catch (err) { console.error(err); }
+    finally { setSaving(false); }
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 md:space-y-5">
       <div>
-        <h1 className="text-base font-semibold tracking-tight">Trade History</h1>
-        <p className="text-[11px] text-muted-foreground">TradeZella-inspired trade journal</p>
+        <h1 className="text-base md:text-lg font-semibold tracking-tight">Trade Journal</h1>
+        <p className="text-[10px] md:text-[11px] text-muted-foreground">TradeZella-inspired trade review</p>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <input
-          type="text"
-          placeholder="Search symbol..."
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="h-7 rounded border border-input bg-background px-2 text-[11px] ring-offset-background placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        />
-        <select
-          value={directionFilter}
-          onChange={(e) => { setDirectionFilter(e.target.value); setPage(1); }}
-          className="h-7 rounded border border-input bg-background px-2 text-[11px] ring-offset-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        >
-          <option value="">All Directions</option>
-          <option value="LONG">Long</option>
-          <option value="SHORT">Short</option>
-        </select>
-        <select
-          value={accountFilter}
-          onChange={(e) => { setAccountFilter(e.target.value); setPage(1); }}
-          className="h-7 rounded border border-input bg-background px-2 text-[11px] ring-offset-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        >
-          <option value="">All Accounts</option>
-          {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-        </select>
-        <span className="text-[11px] text-muted-foreground">{total} trade{total !== 1 ? 's' : ''}</span>
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search symbol..."
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            className="h-8 w-full rounded border border-input bg-background pl-7 pr-2 text-xs ring-offset-background placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          />
+        </div>
+        <button onClick={() => setShowFilters(!showFilters)} className="flex md:hidden h-8 items-center gap-1 rounded border border-input bg-background px-2.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+          <Filter className="h-3.5 w-3.5" /> Filters
+        </button>
+        <div className={cn('hidden md:flex items-center gap-2', showFilters && 'flex flex-wrap')}>
+          <select value={directionFilter} onChange={(e) => { setDirectionFilter(e.target.value); setPage(1); }}
+            className="h-8 rounded border border-input bg-background px-2 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+            <option value="">All Directions</option>
+            <option value="LONG">Long</option>
+            <option value="SHORT">Short</option>
+          </select>
+          <select value={accountFilter} onChange={(e) => { setAccountFilter(e.target.value); setPage(1); }}
+            className="h-8 rounded border border-input bg-background px-2 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+            <option value="">All Accounts</option>
+            {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+          </select>
+        </div>
+        <span className="text-[11px] text-muted-foreground ml-auto">{total} trade{total !== 1 ? 's' : ''}</span>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-3">
-        <div className={cn('lg:col-span-2 space-y-3', selectedTrade && 'lg:col-span-2')}>
+      <div className="grid gap-4 md:gap-5 lg:grid-cols-3">
+        <div className={cn('space-y-2', selectedTrade ? 'lg:col-span-2' : 'lg:col-span-3')}>
           <div className="grid gap-2 sm:grid-cols-2">
             {data.map((t) => (
-              <TradeCard
-                key={t.id}
-                trade={t}
-                onClick={() => { setSelectedTrade(t); setChartLinkInput(t.chartLink ?? ''); }}
-                selected={selectedTrade?.id === t.id}
-              />
+              <TradeCard key={t.id} trade={t} onClick={() => { setSelectedTrade(t); setChartLinkInput(t.chartLink ?? ''); }} selected={selectedTrade?.id === t.id} />
             ))}
           </div>
 
@@ -120,19 +110,15 @@ export default function Trades() {
         </div>
 
         {selectedTrade && (
-          <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-4 h-fit animate-fade-in">
+          <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-4 h-fit animate-slide-in-right">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Trade Details</h3>
               <StatusBadge variant={selectedTrade.direction === 'LONG' ? 'long' : 'short'}>{selectedTrade.direction}</StatusBadge>
             </div>
-
             <div className="text-center mb-4">
               <p className="text-xs text-muted-foreground">{selectedTrade.symbol}</p>
-              <p className={cn('text-2xl font-bold tabular-nums', Number(selectedTrade.pnl) >= 0 ? 'text-success' : 'text-destructive')}>
-                {formatPnl(Number(selectedTrade.pnl))}
-              </p>
+              <p className={cn('text-2xl font-bold tabular-nums', Number(selectedTrade.pnl) >= 0 ? 'text-success' : 'text-destructive')}>{formatPnl(Number(selectedTrade.pnl))}</p>
             </div>
-
             <dl className="space-y-2 text-xs">
               {[
                 ['Entry Price', `$${Number(selectedTrade.buyPrice).toFixed(2)}`],
@@ -149,17 +135,12 @@ export default function Trades() {
                 </div>
               ))}
             </dl>
-
             <div className="mt-4 pt-3 border-t border-[hsl(var(--tv-border))] space-y-2">
               <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Chart Link</label>
-              <input
-                type="text"
-                value={chartLinkInput}
-                onChange={(e) => setChartLinkInput(e.target.value)}
+              <input type="text" value={chartLinkInput} onChange={(e) => setChartLinkInput(e.target.value)}
                 placeholder="https://tradingview.com/chart/..."
-                className="h-7 w-full rounded border border-input bg-background px-2 text-[11px] ring-offset-background placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              />
-              <Button size="sm" onClick={handleEditChartLink} disabled={saving} className="h-7 text-[11px] w-full">
+                className="h-7 w-full rounded border border-input bg-background px-2 text-xs ring-offset-background placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
+              <Button size="sm" onClick={handleEditChartLink} disabled={saving} className="h-7 text-xs w-full">
                 {saving ? 'Saving...' : 'Save Link'}
               </Button>
             </div>

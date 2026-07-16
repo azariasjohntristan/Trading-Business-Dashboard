@@ -16,9 +16,7 @@ export default function Settings() {
 
   useEffect(() => {
     apiGet<HealthCheck>('/health').then(setHealth).catch(() => {});
-    apiGet<{ filename: string; importedAt: string }[]>('/import/history')
-      .then((h) => { if (h.length > 0) setLastImport(h[0]); })
-      .catch(() => {});
+    apiGet<{ filename: string; importedAt: string }[]>('/import/history').then((h) => { if (h.length > 0) setLastImport(h[0]); }).catch(() => {});
   }, []);
 
   const toggleTheme = () => {
@@ -30,15 +28,11 @@ export default function Settings() {
 
   useEffect(() => {
     const saved = localStorage.getItem('theme');
-    if (saved === 'dark') {
-      setDark(true);
-      document.documentElement.classList.add('dark');
-    }
+    if (saved === 'dark') { setDark(true); document.documentElement.classList.add('dark'); }
   }, []);
 
   const handlePasswordChange = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setPwMessage(''); setPwError('');
+    e.preventDefault(); setPwMessage(''); setPwError('');
     try {
       await apiPost('/auth/password', { currentPassword, newPassword });
       setPwMessage('Password updated successfully');
@@ -51,8 +45,8 @@ export default function Settings() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-base font-semibold tracking-tight">System</h1>
-        <p className="text-[11px] text-muted-foreground">Trading business control center</p>
+        <h1 className="text-base font-semibold tracking-tight">Settings</h1>
+        <p className="text-[11px] text-muted-foreground">System control panel</p>
       </div>
 
       <SectionHeader title="System Health" />
@@ -72,13 +66,8 @@ export default function Settings() {
         <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3">
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Last Import</p>
           {lastImport ? (
-            <>
-              <p className="text-xs font-medium mt-1">{lastImport.filename}</p>
-              <p className="text-[10px] text-muted-foreground">{new Date(lastImport.importedAt).toLocaleString()}</p>
-            </>
-          ) : (
-            <p className="text-xs text-muted-foreground mt-1">No imports yet</p>
-          )}
+            <><p className="text-xs font-medium mt-1">{lastImport.filename}</p><p className="text-[10px] text-muted-foreground">{new Date(lastImport.importedAt).toLocaleString()}</p></>
+          ) : <p className="text-xs text-muted-foreground mt-1">No imports yet</p>}
         </div>
       </div>
 
