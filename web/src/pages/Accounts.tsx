@@ -3,7 +3,7 @@ import { apiGet, apiPost } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
-import { formatPnl, SectionHeader, KpiCardSkeleton } from '@/design-system';
+import { formatPnl, SectionHeader } from '@/design-system';
 
 interface AccountStat {
   id: string;
@@ -32,8 +32,6 @@ export default function Accounts() {
   const totalPnl = stats.reduce((sum, a) => sum + a.totalPnl, 0);
   const totalTrades = stats.reduce((sum, a) => sum + a.totalTrades, 0);
   const avgWinRate = stats.length > 0 ? stats.reduce((sum, a) => sum + a.winRate, 0) / stats.length : 0;
-  const maxDrawdown = stats.reduce((min, a) => Math.min(min, a.maxDrawdown), 0);
-
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     await apiPost('/accounts', { name, description });

@@ -38,7 +38,6 @@ export default function Analytics() {
     : [];
 
   const wins = behav ? behav.direction.long.wins + behav.direction.short.wins : 0;
-  const losses = perf ? perf.totalTrades - wins : 0;
 
   return (
     <div className="space-y-5">

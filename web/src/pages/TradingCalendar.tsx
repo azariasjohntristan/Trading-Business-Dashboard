@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
 import { apiGet } from '@/lib/api';
-import { cn } from '@/lib/utils';
 import { TradingCalendar, TradeCard, StatusBadge, SectionHeader, formatPnl } from '@/design-system';
 import type { CalendarDay, DayDetail } from '@/types';
 

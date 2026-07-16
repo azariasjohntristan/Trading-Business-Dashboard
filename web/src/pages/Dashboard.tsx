@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { apiGet } from '@/lib/api';
 import { cn } from '@/lib/utils';
-import { KpiCard, TradingCalendar, TradeCard, StatusBadge, KpiCardSkeleton, TradeCardSkeleton, formatPnl, SectionHeader } from '@/design-system';
+import { KpiCard, TradingCalendar, TradeCard, StatusBadge, KpiCardSkeleton, formatPnl, SectionHeader } from '@/design-system';
 import type { KpiData, CalendarDay, DayDetail, Trade, PerformanceData } from '@/types';
 
 const viewOptions = ['daily', 'weekly', 'monthly'] as const;

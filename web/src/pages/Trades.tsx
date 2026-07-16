@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { apiGet, apiPost } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { TradeCard, StatusBadge, formatPnl, SectionHeader } from '@/design-system';
+import { TradeCard, StatusBadge, formatPnl } from '@/design-system';
 import type { Trade, Account } from '@/types';
 
 interface TradesResponse {
