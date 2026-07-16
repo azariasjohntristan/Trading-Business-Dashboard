@@ -3,6 +3,11 @@ export interface HealthCheck {
   database: string;
 }
 
+export interface User {
+  id: string;
+  username: string;
+}
+
 export interface Account {
   id: string;
   name: string;

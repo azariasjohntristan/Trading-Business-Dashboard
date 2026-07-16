@@ -1,16 +1,20 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { PrismaClient } from '@prisma/client';
 import { errorHandler } from './middleware/errorHandler';
 import healthRouter from './routes/health';
+import authRouter from './routes/auth';
 
 const app = express();
 export const prisma = new PrismaClient();
 
-app.use(cors());
+app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(express.json());
+app.use(cookieParser());
 
 app.use('/api/health', healthRouter);
+app.use('/api/auth', authRouter);
 
 app.use(errorHandler);
 
