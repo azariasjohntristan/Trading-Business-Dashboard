@@ -73,3 +73,28 @@ export interface ImportHistory {
   errorMessages: string | null;
   importedAt: string;
 }
+
+export interface PerformanceData {
+  equityCurve: { date: string; cumulativePnl: number }[];
+  dailyPnl: { date: string; pnl: number; trades: number }[];
+  weeklyPnl: { week: string; pnl: number; trades: number }[];
+  monthlyPnl: { month: string; pnl: number; trades: number }[];
+  profitFactor: number;
+  expectancy: number;
+  maxDrawdown: number;
+  winStreak: number;
+  loseStreak: number;
+  totalTrades: number;
+  totalPnL: number;
+}
+
+export interface BehaviorData {
+  hourly: { hour: number; pnl: number; trades: number; winRate: number }[];
+  weekday: { day: string; dayIndex: number; pnl: number; trades: number; winRate: number }[];
+  duration: { avgHolding: number; winDuration: number; loseDuration: number };
+  direction: {
+    long: { pnl: number; trades: number; winRate: number; wins: number };
+    short: { pnl: number; trades: number; winRate: number; wins: number };
+  };
+  execution: { avgQty: number; totalTrades: number };
+}
