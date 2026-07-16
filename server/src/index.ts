@@ -7,6 +7,8 @@ import healthRouter from './routes/health';
 import authRouter from './routes/auth';
 import accountsRouter from './routes/accounts';
 import importRouter from './routes/import';
+import dashboardRouter from './routes/dashboard';
+import tradesRouter from './routes/trades';
 
 const app = express();
 export const prisma = new PrismaClient();
@@ -19,6 +21,8 @@ app.use('/api/health', healthRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/accounts', accountsRouter);
 app.use('/api/import', importRouter);
+app.use('/api/dashboard', dashboardRouter);
+app.use('/api/trades', tradesRouter);
 
 app.use(errorHandler);
 
