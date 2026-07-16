@@ -3,6 +3,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import DashboardLayout from '@/layouts/DashboardLayout';
 import Dashboard from '@/pages/Dashboard';
+import TradingCalendarPage from '@/pages/TradingCalendar';
 import Analytics from '@/pages/Analytics';
 import Trades from '@/pages/Trades';
 import ImportPage from '@/pages/Import';
@@ -19,6 +20,7 @@ export default function App() {
           <Route element={<DashboardLayout />}>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/calendar" element={<TradingCalendarPage />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/trades" element={<Trades />} />
             <Route path="/import" element={<ImportPage />} />

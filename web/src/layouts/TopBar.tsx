@@ -1,27 +1,47 @@
-import { Bell, LogOut } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect } from 'react';
+import { LogOut, Bell } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { apiGet } from '@/lib/api';
+import type { Account } from '@/types';
 
 export default function TopBar() {
   const { user, logout } = useAuth();
+  const [accounts, setAccounts] = useState<Account[]>([]);
+
+  useEffect(() => {
+    apiGet<Account[]>('/accounts').then(setAccounts).catch(() => {});
+  }, []);
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-border bg-background px-5">
+    <header className="flex h-14 items-center justify-between border-b border-[hsl(var(--tv-border))] bg-background px-5">
       <div className="flex items-center gap-3">
-        <span className="text-xs text-muted-foreground">All Accounts</span>
+        <select className="h-7 rounded border border-input bg-background px-2 text-xs text-muted-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+          <option value="">All Accounts</option>
+          {accounts.map((a) => (
+            <option key={a.id} value={a.id}>{a.name}</option>
+          ))}
+        </select>
       </div>
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+      <div className="flex items-center gap-3">
+        <button className="relative text-muted-foreground hover:text-foreground transition-colors">
           <Bell className="h-4 w-4" />
-        </Button>
-        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-foreground">
-          {user?.username.charAt(0).toUpperCase()}
+          <span className="absolute -right-0.5 -top-0.5 flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+          </span>
+        </button>
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-foreground">
+            {user?.username.charAt(0).toUpperCase()}
+          </div>
+          <span className="text-xs font-medium text-foreground">{user?.username}</span>
         </div>
-        <span className="text-xs font-medium text-foreground">{user?.username}</span>
-        <Button variant="ghost" size="sm" onClick={logout} className="h-7 gap-1 px-2 text-xs text-muted-foreground hover:text-foreground">
+        <button
+          onClick={logout}
+          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
           <LogOut className="h-3.5 w-3.5" />
-          Logout
-        </Button>
+        </button>
       </div>
     </header>
   );

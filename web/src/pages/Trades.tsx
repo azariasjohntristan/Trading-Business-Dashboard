@@ -1,16 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
-import {
-  useReactTable,
-  getCoreRowModel,
-  getSortedRowModel,
-  flexRender,
-  createColumnHelper,
-  type SortingState,
-} from '@tanstack/react-table';
+import { useState, useEffect } from 'react';
 import { apiGet, apiPost } from '@/lib/api';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { StatusBadge, formatPnl } from '@/design-system';
+import { cn } from '@/lib/utils';
+import { TradeCard, StatusBadge, formatPnl, SectionHeader } from '@/design-system';
 import type { Trade, Account } from '@/types';
 
 interface TradesResponse {
@@ -20,20 +12,13 @@ interface TradesResponse {
   limit: number;
 }
 
-interface TradeWithAccount extends Trade {
-  account: { name: string };
-}
-
-const columnHelper = createColumnHelper<TradeWithAccount>();
-
 export default function Trades() {
-  const [data, setData] = useState<TradeWithAccount[]>([]);
+  const [data, setData] = useState<Trade[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [directionFilter, setDirectionFilter] = useState('');
-  const [sorting, setSorting] = useState<SortingState>([{ id: 'soldTimestamp', desc: true }]);
-  const [selectedTrade, setSelectedTrade] = useState<TradeWithAccount | null>(null);
+  const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
   const [chartLinkInput, setChartLinkInput] = useState('');
   const [saving, setSaving] = useState(false);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -51,70 +36,14 @@ export default function Trades() {
     if (search) params.set('search', search);
     if (directionFilter) params.set('direction', directionFilter);
     if (accountFilter) params.set('accountId', accountFilter);
-    if (sorting.length > 0) {
-      params.set('sortBy', sorting[0].id);
-      params.set('sortOrder', sorting[0].desc ? 'desc' : 'asc');
-    }
+    params.set('sortBy', 'soldTimestamp');
+    params.set('sortOrder', 'desc');
 
     apiGet<TradesResponse>(`/trades?${params}`).then((res) => {
-      setData(res.trades as TradeWithAccount[]);
+      setData(res.trades);
       setTotal(res.total);
     }).catch(() => {});
-  }, [page, search, directionFilter, accountFilter, sorting]);
-
-  const columns = useMemo(() => [
-    columnHelper.accessor('symbol', {
-      header: 'Symbol',
-      cell: (info) => <span className="font-medium">{info.getValue()}</span>,
-    }),
-    columnHelper.accessor('direction', {
-      header: 'Dir',
-      cell: (info) => <StatusBadge variant={info.getValue() === 'LONG' ? 'long' : 'short'}>{info.getValue()}</StatusBadge>,
-    }),
-    columnHelper.accessor('qty', {
-      header: 'Qty',
-      cell: (info) => <span className="tabular-nums">{Number(info.getValue()).toFixed(2)}</span>,
-    }),
-    columnHelper.accessor('buyPrice', {
-      header: 'Entry',
-      cell: (info) => <span className="tabular-nums">${Number(info.getValue()).toFixed(2)}</span>,
-    }),
-    columnHelper.accessor('sellPrice', {
-      header: 'Exit',
-      cell: (info) => <span className="tabular-nums">${Number(info.getValue()).toFixed(2)}</span>,
-    }),
-    columnHelper.accessor('pnl', {
-      header: 'P&L',
-      cell: (info) => (
-        <span className={cn('tabular-nums font-medium', Number(info.getValue()) >= 0 ? 'text-success' : 'text-destructive')}>
-          {formatPnl(Number(info.getValue()))}
-        </span>
-      ),
-    }),
-    columnHelper.accessor('soldTimestamp', {
-      header: 'Date',
-      cell: (info) => new Date(info.getValue()).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-    }),
-    columnHelper.accessor('duration', {
-      header: 'Duration',
-      cell: (info) => info.getValue() ?? '--',
-    }),
-    columnHelper.accessor('account.name', {
-      id: 'account',
-      header: 'Account',
-      cell: (info) => info.getValue(),
-    }),
-  ], []);
-
-  const table = useReactTable({
-    data,
-    columns,
-    state: { sorting },
-    onSortingChange: setSorting,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    manualSorting: true,
-  });
+  }, [page, search, directionFilter, accountFilter]);
 
   const totalPages = Math.ceil(total / limit);
 
@@ -134,8 +63,8 @@ export default function Trades() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-lg font-semibold tracking-tight">Trades</h1>
-        <p className="text-xs text-muted-foreground">Trade history and details</p>
+        <h1 className="text-base font-semibold tracking-tight">Trade History</h1>
+        <p className="text-[11px] text-muted-foreground">TradeZella-inspired trade journal</p>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -144,12 +73,12 @@ export default function Trades() {
           placeholder="Search symbol..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="h-8 rounded border border-input bg-background px-2.5 text-xs ring-offset-background placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="h-7 rounded border border-input bg-background px-2 text-[11px] ring-offset-background placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         />
         <select
           value={directionFilter}
           onChange={(e) => { setDirectionFilter(e.target.value); setPage(1); }}
-          className="h-8 rounded border border-input bg-background px-2.5 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="h-7 rounded border border-input bg-background px-2 text-[11px] ring-offset-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
           <option value="">All Directions</option>
           <option value="LONG">Long</option>
@@ -158,93 +87,62 @@ export default function Trades() {
         <select
           value={accountFilter}
           onChange={(e) => { setAccountFilter(e.target.value); setPage(1); }}
-          className="h-8 rounded border border-input bg-background px-2.5 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="h-7 rounded border border-input bg-background px-2 text-[11px] ring-offset-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
           <option value="">All Accounts</option>
-          {accounts.map((a) => (
-            <option key={a.id} value={a.id}>{a.name}</option>
-          ))}
+          {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
         </select>
-        <span className="text-xs text-muted-foreground">{total} trade{total !== 1 ? 's' : ''}</span>
+        <span className="text-[11px] text-muted-foreground">{total} trade{total !== 1 ? 's' : ''}</span>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <div className="overflow-x-auto rounded-lg border">
-            <table className="w-full text-xs">
-              <thead>
-                {table.getHeaderGroups().map((hg) => (
-                  <tr key={hg.id} className="border-b bg-muted/30">
-                    {hg.headers.map((header) => (
-                      <th
-                        key={header.id}
-                        onClick={header.column.getToggleSortingHandler()}
-                        className={cn(
-                          'px-3 py-2 text-left font-medium text-muted-foreground',
-                          header.column.getCanSort() && 'cursor-pointer select-none hover:text-foreground',
-                        )}
-                      >
-                        {flexRender(header.column.columnDef.header, header.getContext())}
-                        {{ asc: ' ↑', desc: ' ↓' }[header.column.getIsSorted() as string] ?? ''}
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody>
-                {table.getRowModel().rows.map((row) => (
-                  <tr
-                    key={row.id}
-                    onClick={() => {
-                      setSelectedTrade(row.original);
-                      setChartLinkInput(row.original.chartLink ?? '');
-                    }}
-                    className={cn(
-                      'cursor-pointer border-b last:border-0 hover:bg-muted/20',
-                      selectedTrade?.id === row.original.id && 'bg-muted/30',
-                    )}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="px-3 py-2">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <div className={cn('lg:col-span-2 space-y-3', selectedTrade && 'lg:col-span-2')}>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {data.map((t) => (
+              <TradeCard
+                key={t.id}
+                trade={t}
+                onClick={() => { setSelectedTrade(t); setChartLinkInput(t.chartLink ?? ''); }}
+                selected={selectedTrade?.id === t.id}
+              />
+            ))}
           </div>
 
           {totalPages > 1 && (
-            <div className="mt-3 flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">Page {page} of {totalPages}</span>
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-[11px] text-muted-foreground">Page {page} of {totalPages}</span>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
-                  Previous
-                </Button>
-                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
-                  Next
-                </Button>
+                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))} className="h-7 text-[11px] px-2">Previous</Button>
+                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="h-7 text-[11px] px-2">Next</Button>
               </div>
             </div>
           )}
         </div>
 
         {selectedTrade && (
-          <div className="rounded-lg border bg-card p-4">
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Trade Details</h3>
-            <dl className="space-y-1.5 text-xs">
-              {([['Symbol', selectedTrade.symbol],
-                ['Direction', <StatusBadge variant={selectedTrade.direction === 'LONG' ? 'long' : 'short'}>{selectedTrade.direction}</StatusBadge>],
-                ['Quantity', Number(selectedTrade.qty).toFixed(2)],
+          <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-4 h-fit animate-fade-in">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Trade Details</h3>
+              <StatusBadge variant={selectedTrade.direction === 'LONG' ? 'long' : 'short'}>{selectedTrade.direction}</StatusBadge>
+            </div>
+
+            <div className="text-center mb-4">
+              <p className="text-xs text-muted-foreground">{selectedTrade.symbol}</p>
+              <p className={cn('text-2xl font-bold tabular-nums', Number(selectedTrade.pnl) >= 0 ? 'text-success' : 'text-destructive')}>
+                {formatPnl(Number(selectedTrade.pnl))}
+              </p>
+            </div>
+
+            <dl className="space-y-2 text-xs">
+              {[
                 ['Entry Price', `$${Number(selectedTrade.buyPrice).toFixed(2)}`],
                 ['Exit Price', `$${Number(selectedTrade.sellPrice).toFixed(2)}`],
-                ['P&L', <span className={Number(selectedTrade.pnl) >= 0 ? 'text-success' : 'text-destructive'}>{formatPnl(Number(selectedTrade.pnl))}</span>],
+                ['Quantity', Number(selectedTrade.qty).toFixed(2)],
                 ['Duration', selectedTrade.duration ?? '--'],
                 ['Entry Time', new Date(selectedTrade.boughtTimestamp).toLocaleString()],
                 ['Exit Time', new Date(selectedTrade.soldTimestamp).toLocaleString()],
-                ['Account', selectedTrade.account?.name],
-              ] as [string, React.ReactNode][]).map(([label, value]) => (
+                ['Account', selectedTrade.account?.name ?? '--'],
+              ].map(([label, value]) => (
                 <div key={label} className="flex justify-between">
                   <dt className="text-muted-foreground">{label}</dt>
                   <dd className="font-medium tabular-nums">{value}</dd>
@@ -252,16 +150,16 @@ export default function Trades() {
               ))}
             </dl>
 
-            <div className="mt-4 space-y-2">
-              <label className="text-xs font-medium text-muted-foreground">Chart Link</label>
+            <div className="mt-4 pt-3 border-t border-[hsl(var(--tv-border))] space-y-2">
+              <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Chart Link</label>
               <input
                 type="text"
                 value={chartLinkInput}
                 onChange={(e) => setChartLinkInput(e.target.value)}
                 placeholder="https://tradingview.com/chart/..."
-                className="h-8 w-full rounded border border-input bg-background px-2.5 text-xs ring-offset-background placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                className="h-7 w-full rounded border border-input bg-background px-2 text-[11px] ring-offset-background placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
-              <Button size="sm" onClick={handleEditChartLink} disabled={saving} className="h-7 text-xs">
+              <Button size="sm" onClick={handleEditChartLink} disabled={saving} className="h-7 text-[11px] w-full">
                 {saving ? 'Saving...' : 'Save Link'}
               </Button>
             </div>
