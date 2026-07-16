@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Direction {
+  LONG
+  SHORT
+}
+
+enum ImportStatus {
+  SUCCESS
+  PARTIAL
+  FAILED
+}
+
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  username     String    @unique
+  passwordHash String
+  accounts     Account[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Account {
+  id              String         @id @default(uuid()) @db.Uuid
+  name            String
+  description     String?
+  userId          String?        @db.Uuid
+  user            User?          @relation(fields: [userId], references: [id])
+  trades          Trade[]
+  importHistories ImportHistory[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model Trade {
+  id              String    @id @default(uuid()) @db.Uuid
+  accountId       String    @db.Uuid
+  account         Account   @relation(fields: [accountId], references: [id])
+  symbol          String
+  direction       Direction
+  qty             Decimal   @db.Decimal(15, 2)
+  buyPrice        Decimal   @db.Decimal(15, 2)
+  sellPrice       Decimal   @db.Decimal(15, 2)
+  pnl             Decimal   @db.Decimal(15, 2)
+  boughtTimestamp DateTime
+  soldTimestamp   DateTime
+  duration        String?
+  tradeDate       DateTime  @db.Date
+  chartLink       String?
+
+  csvPriceFormat    String?   @map("_priceFormat")
+  csvPriceFormatType String?  @map("_priceFormatType")
+  csvTickSize       Decimal?  @db.Decimal(15, 6) @map("_tickSize")
+  buyFillId         String?
+  sellFillId        String?
+
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@unique([symbol, boughtTimestamp, soldTimestamp, buyPrice, sellPrice, qty])
+  @@index([accountId])
+  @@index([tradeDate])
+  @@index([symbol])
+}
+
+model ImportHistory {
+  id                String       @id @default(uuid()) @db.Uuid
+  accountId         String       @db.Uuid
+  account           Account      @relation(fields: [accountId], references: [id])
+  filename          String
+  tradesDetected    Int          @default(0)
+  newTradesImported Int          @default(0)
+  duplicatesSkipped Int          @default(0)
+  status            ImportStatus
+  errorMessages     String?
+  importedAt        DateTime     @default(now())
+
+  @@index([accountId])
+}
