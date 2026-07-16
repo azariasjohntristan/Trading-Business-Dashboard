@@ -22,3 +22,16 @@ export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
   }
   return res.json();
 }
+
+export async function apiUpload<T>(path: string, formData: FormData): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error ?? `Upload failed`);
+  }
+  return res.json();
+}
