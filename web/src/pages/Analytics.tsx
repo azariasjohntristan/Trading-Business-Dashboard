@@ -90,7 +90,7 @@ export default function Analytics() {
                 <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
                 <Tooltip
                   contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 6 }}
-                  formatter={(value: number) => [formatPnl(value), 'P&L']}
+                  formatter={(value) => [formatPnl(Number(value)), 'P&L']}
                 />
                 <Area type="monotone" dataKey="cumulativePnl" stroke="hsl(142.1 76% 36%)" fill="url(#eqGrad)" strokeWidth={2} />
               </AreaChart>
@@ -123,7 +123,7 @@ export default function Analytics() {
                 <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
                 <Tooltip
                   contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 6 }}
-                  formatter={(value: number) => [formatPnl(value), 'P&L']}
+                  formatter={(value) => [formatPnl(Number(value)), 'P&L']}
                 />
                 <Bar dataKey="pnl" fill="hsl(142.1 76% 36%)" radius={[2, 2, 0, 0]} />
               </BarChart>
@@ -146,7 +146,7 @@ export default function Analytics() {
                 <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
                 <Tooltip
                   contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 6 }}
-                  formatter={(value: number) => [formatPnl(value), 'P&L']}
+                  formatter={(value) => [formatPnl(Number(value)), 'P&L']}
                 />
                 <Bar dataKey="pnl" fill="hsl(142.1 76% 36%)" radius={[2, 2, 0, 0]} />
               </BarChart>
@@ -165,7 +165,7 @@ export default function Analytics() {
                 <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
                 <Tooltip
                   contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 6 }}
-                  formatter={(value: number) => [formatPnl(value), 'P&L']}
+                  formatter={(value) => [formatPnl(Number(value)), 'P&L']}
                 />
                 <Bar dataKey="pnl" fill="hsl(142.1 76% 36%)" radius={[2, 2, 0, 0]} />
               </BarChart>
@@ -189,7 +189,7 @@ export default function Analytics() {
                 <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
                 <Tooltip
                   contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 6 }}
-                  formatter={(value: number) => [formatPnl(value), 'P&L']}
+                  formatter={(value) => [formatPnl(Number(value)), 'P&L']}
                 />
                 <Legend />
                 <Bar dataKey="pnl" fill="hsl(142.1 76% 36%)" radius={[2, 2, 0, 0]} name="P&L" />

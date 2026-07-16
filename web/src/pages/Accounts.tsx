@@ -3,7 +3,6 @@ import { apiGet, apiPost } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
-import type { Account } from '@/types';
 
 interface AccountStat {
   id: string;

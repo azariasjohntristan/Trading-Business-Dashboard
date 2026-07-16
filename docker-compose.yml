@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: trading123
       POSTGRES_DB: trading_dashboard
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -16,6 +16,42 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - trading-net
+
+  server:
+    build:
+      context: ./server
+    container_name: trading-server
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://trading:trading123@db:5432/trading_dashboard
+      PORT: 3001
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET}
+    networks:
+      - trading-net
+    labels:
+      - "traefik.enable=false"
+
+  web:
+    build:
+      context: ./web
+    container_name: trading-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    networks:
+      - trading-net
 
 volumes:
   pgdata:
+
+networks:
+  trading-net:
+    driver: bridge
