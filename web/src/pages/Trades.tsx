@@ -10,6 +10,7 @@ import {
 import { apiGet, apiPost } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { StatusBadge, formatPnl } from '@/design-system';
 import type { Trade, Account } from '@/types';
 
 interface TradesResponse {
@@ -21,10 +22,6 @@ interface TradesResponse {
 
 interface TradeWithAccount extends Trade {
   account: { name: string };
-}
-
-function formatPnl(value: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', signDisplay: 'always' }).format(value);
 }
 
 const columnHelper = createColumnHelper<TradeWithAccount>();
@@ -72,31 +69,24 @@ export default function Trades() {
     }),
     columnHelper.accessor('direction', {
       header: 'Dir',
-      cell: (info) => (
-        <span className={cn(
-          'inline-block rounded px-1.5 py-0.5 text-xs font-medium',
-          info.getValue() === 'LONG' ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive',
-        )}>
-          {info.getValue()}
-        </span>
-      ),
+      cell: (info) => <StatusBadge variant={info.getValue() === 'LONG' ? 'long' : 'short'}>{info.getValue()}</StatusBadge>,
     }),
     columnHelper.accessor('qty', {
       header: 'Qty',
-      cell: (info) => Number(info.getValue()).toFixed(2),
+      cell: (info) => <span className="tabular-nums">{Number(info.getValue()).toFixed(2)}</span>,
     }),
     columnHelper.accessor('buyPrice', {
       header: 'Entry',
-      cell: (info) => `$${Number(info.getValue()).toFixed(2)}`,
+      cell: (info) => <span className="tabular-nums">${Number(info.getValue()).toFixed(2)}</span>,
     }),
     columnHelper.accessor('sellPrice', {
       header: 'Exit',
-      cell: (info) => `$${Number(info.getValue()).toFixed(2)}`,
+      cell: (info) => <span className="tabular-nums">${Number(info.getValue()).toFixed(2)}</span>,
     }),
     columnHelper.accessor('pnl', {
       header: 'P&L',
       cell: (info) => (
-        <span className={cn('font-medium', Number(info.getValue()) >= 0 ? 'text-success' : 'text-destructive')}>
+        <span className={cn('tabular-nums font-medium', Number(info.getValue()) >= 0 ? 'text-success' : 'text-destructive')}>
           {formatPnl(Number(info.getValue()))}
         </span>
       ),
@@ -142,24 +132,24 @@ export default function Trades() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Trades</h1>
-        <p className="text-sm text-muted-foreground">Trade history and details</p>
+        <h1 className="text-lg font-semibold tracking-tight">Trades</h1>
+        <p className="text-xs text-muted-foreground">Trade history and details</p>
       </div>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap items-center gap-2">
         <input
           type="text"
           placeholder="Search symbol..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="h-8 rounded border border-input bg-background px-2.5 text-xs ring-offset-background placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         />
         <select
           value={directionFilter}
           onChange={(e) => { setDirectionFilter(e.target.value); setPage(1); }}
-          className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="h-8 rounded border border-input bg-background px-2.5 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
           <option value="">All Directions</option>
           <option value="LONG">Long</option>
@@ -168,31 +158,29 @@ export default function Trades() {
         <select
           value={accountFilter}
           onChange={(e) => { setAccountFilter(e.target.value); setPage(1); }}
-          className="flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="h-8 rounded border border-input bg-background px-2.5 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
           <option value="">All Accounts</option>
           {accounts.map((a) => (
             <option key={a.id} value={a.id}>{a.name}</option>
           ))}
         </select>
-        <span className="flex items-center text-sm text-muted-foreground">
-          {total} trade{total !== 1 ? 's' : ''}
-        </span>
+        <span className="text-xs text-muted-foreground">{total} trade{total !== 1 ? 's' : ''}</span>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-5 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <div className="overflow-x-auto rounded-lg border">
-            <table className="w-full text-sm">
+            <table className="w-full text-xs">
               <thead>
                 {table.getHeaderGroups().map((hg) => (
-                  <tr key={hg.id} className="border-b bg-muted/50">
+                  <tr key={hg.id} className="border-b bg-muted/30">
                     {hg.headers.map((header) => (
                       <th
                         key={header.id}
                         onClick={header.column.getToggleSortingHandler()}
                         className={cn(
-                          'px-3 py-2 text-left font-medium',
+                          'px-3 py-2 text-left font-medium text-muted-foreground',
                           header.column.getCanSort() && 'cursor-pointer select-none hover:text-foreground',
                         )}
                       >
@@ -212,8 +200,8 @@ export default function Trades() {
                       setChartLinkInput(row.original.chartLink ?? '');
                     }}
                     className={cn(
-                      'cursor-pointer border-b last:border-0 hover:bg-muted/50',
-                      selectedTrade?.id === row.original.id && 'bg-muted',
+                      'cursor-pointer border-b last:border-0 hover:bg-muted/20',
+                      selectedTrade?.id === row.original.id && 'bg-muted/30',
                     )}
                   >
                     {row.getVisibleCells().map((cell) => (
@@ -228,25 +216,13 @@ export default function Trades() {
           </div>
 
           {totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">
-                Page {page} of {totalPages}
-              </span>
+            <div className="mt-3 flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">Page {page} of {totalPages}</span>
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page <= 1}
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                >
+                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
                   Previous
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page >= totalPages}
-                  onClick={() => setPage((p) => p + 1)}
-                >
+                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
                   Next
                 </Button>
               </div>
@@ -256,69 +232,36 @@ export default function Trades() {
 
         {selectedTrade && (
           <div className="rounded-lg border bg-card p-4">
-            <h3 className="mb-3 text-sm font-semibold">Trade Details</h3>
-            <dl className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Symbol</dt>
-                <dd className="font-medium">{selectedTrade.symbol}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Direction</dt>
-                <dd>
-                  <span className={cn(
-                    'inline-block rounded px-1.5 py-0.5 text-xs font-medium',
-                    selectedTrade.direction === 'LONG' ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive',
-                  )}>
-                    {selectedTrade.direction}
-                  </span>
-                </dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Quantity</dt>
-                <dd>{Number(selectedTrade.qty).toFixed(2)}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Entry Price</dt>
-                <dd>${Number(selectedTrade.buyPrice).toFixed(2)}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Exit Price</dt>
-                <dd>${Number(selectedTrade.sellPrice).toFixed(2)}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">P&L</dt>
-                <dd className={cn('font-medium', Number(selectedTrade.pnl) >= 0 ? 'text-success' : 'text-destructive')}>
-                  {formatPnl(Number(selectedTrade.pnl))}
-                </dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Duration</dt>
-                <dd>{selectedTrade.duration ?? '--'}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Entry Time</dt>
-                <dd className="text-xs">{new Date(selectedTrade.boughtTimestamp).toLocaleString()}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Exit Time</dt>
-                <dd className="text-xs">{new Date(selectedTrade.soldTimestamp).toLocaleString()}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Account</dt>
-                <dd>{selectedTrade.account?.name}</dd>
-              </div>
+            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Trade Details</h3>
+            <dl className="space-y-1.5 text-xs">
+              {([['Symbol', selectedTrade.symbol],
+                ['Direction', <StatusBadge variant={selectedTrade.direction === 'LONG' ? 'long' : 'short'}>{selectedTrade.direction}</StatusBadge>],
+                ['Quantity', Number(selectedTrade.qty).toFixed(2)],
+                ['Entry Price', `$${Number(selectedTrade.buyPrice).toFixed(2)}`],
+                ['Exit Price', `$${Number(selectedTrade.sellPrice).toFixed(2)}`],
+                ['P&L', <span className={Number(selectedTrade.pnl) >= 0 ? 'text-success' : 'text-destructive'}>{formatPnl(Number(selectedTrade.pnl))}</span>],
+                ['Duration', selectedTrade.duration ?? '--'],
+                ['Entry Time', new Date(selectedTrade.boughtTimestamp).toLocaleString()],
+                ['Exit Time', new Date(selectedTrade.soldTimestamp).toLocaleString()],
+                ['Account', selectedTrade.account?.name],
+              ] as [string, React.ReactNode][]).map(([label, value]) => (
+                <div key={label} className="flex justify-between">
+                  <dt className="text-muted-foreground">{label}</dt>
+                  <dd className="font-medium tabular-nums">{value}</dd>
+                </div>
+              ))}
             </dl>
 
             <div className="mt-4 space-y-2">
-              <label className="text-sm font-medium">Chart Link</label>
+              <label className="text-xs font-medium text-muted-foreground">Chart Link</label>
               <input
                 type="text"
                 value={chartLinkInput}
                 onChange={(e) => setChartLinkInput(e.target.value)}
                 placeholder="https://tradingview.com/chart/..."
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="h-8 w-full rounded border border-input bg-background px-2.5 text-xs ring-offset-background placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
-              <Button size="sm" onClick={handleEditChartLink} disabled={saving}>
+              <Button size="sm" onClick={handleEditChartLink} disabled={saving} className="h-7 text-xs">
                 {saving ? 'Saving...' : 'Save Link'}
               </Button>
             </div>
