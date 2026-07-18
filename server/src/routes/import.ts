@@ -82,6 +82,7 @@ router.post('/', authMiddleware, upload.single('file'), async (req, res) => {
     for (const trade of parsedTrades) {
       const existing = await prisma.trade.findFirst({
         where: {
+          accountId,
           symbol: trade.symbol,
           boughtTimestamp: trade.boughtTimestamp,
           soldTimestamp: trade.soldTimestamp,
