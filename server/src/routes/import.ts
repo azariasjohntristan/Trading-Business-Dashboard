@@ -79,46 +79,30 @@ router.post('/', authMiddleware, upload.single('file'), async (req, res) => {
     let newCount = 0;
     let duplicateCount = 0;
 
-    for (const trade of parsedTrades) {
-      const existing = await prisma.trade.findFirst({
-        where: {
-          accountId,
-          symbol: trade.symbol,
-          boughtTimestamp: trade.boughtTimestamp,
-          soldTimestamp: trade.soldTimestamp,
-          buyPrice: trade.buyPrice,
-          sellPrice: trade.sellPrice,
-          qty: trade.qty,
-        },
-      });
+    const result = await prisma.trade.createMany({
+      data: parsedTrades.map((trade) => ({
+        accountId,
+        symbol: trade.symbol,
+        direction: trade.direction,
+        qty: trade.qty,
+        buyPrice: trade.buyPrice,
+        sellPrice: trade.sellPrice,
+        pnl: trade.pnl,
+        boughtTimestamp: trade.boughtTimestamp,
+        soldTimestamp: trade.soldTimestamp,
+        duration: trade.duration,
+        tradeDate: new Date(trade.tradeDate),
+        csvPriceFormat: trade._priceFormat,
+        csvPriceFormatType: trade._priceFormatType,
+        csvTickSize: trade._tickSize,
+        buyFillId: trade.buyFillId,
+        sellFillId: trade.sellFillId,
+      })),
+      skipDuplicates: true,
+    });
 
-      if (existing) {
-        duplicateCount++;
-        continue;
-      }
-
-      await prisma.trade.create({
-        data: {
-          accountId,
-          symbol: trade.symbol,
-          direction: trade.direction,
-          qty: trade.qty,
-          buyPrice: trade.buyPrice,
-          sellPrice: trade.sellPrice,
-          pnl: trade.pnl,
-          boughtTimestamp: trade.boughtTimestamp,
-          soldTimestamp: trade.soldTimestamp,
-          duration: trade.duration,
-          tradeDate: new Date(trade.tradeDate),
-          csvPriceFormat: trade._priceFormat,
-          csvPriceFormatType: trade._priceFormatType,
-          csvTickSize: trade._tickSize,
-          buyFillId: trade.buyFillId,
-          sellFillId: trade.sellFillId,
-        },
-      });
-      newCount++;
-    }
+    newCount = result.count;
+    duplicateCount = parsedTrades.length - result.count;
 
     const status = newCount === parsedTrades.length ? 'SUCCESS' : newCount > 0 ? 'PARTIAL' : 'FAILED';
 
