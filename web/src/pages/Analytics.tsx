@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
-import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts';
 import { apiGet } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { formatPnl, SectionHeader, KpiCardSkeleton } from '@/design-system';
+import { useSelectedAccount } from '@/contexts/SelectedAccountContext';
 import type { PerformanceData, BehaviorData } from '@/types';
 
 function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3 md:p-4 animate-fade-in">
+    <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3 md:p-4 card-hover animate-fade-in">
       <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3">{title}</p>
       {children}
     </div>
@@ -17,7 +18,7 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
 function KpiBlock({ label, value, isPnl, className }: { label: string; value: string; isPnl?: boolean; className?: string }) {
   const negative = isPnl && value.startsWith('-');
   return (
-    <div className={cn('rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3', className)}>
+    <div className={cn('rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3 card-hover', className)}>
       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
       <p className={cn('text-lg md:text-xl font-bold tabular-nums mt-1', isPnl && (negative ? 'text-destructive' : 'text-success'))}>{value}</p>
     </div>
@@ -32,15 +33,17 @@ function formatMinutes(mins: number): string {
 }
 
 export default function Analytics() {
+  const { selectedAccountId } = useSelectedAccount();
   const [perf, setPerf] = useState<PerformanceData | null>(null);
   const [behav, setBehav] = useState<BehaviorData | null>(null);
   const [perfView, setPerfView] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [timeView, setTimeView] = useState<'pnl' | 'winrate'>('pnl');
+  const acctParam = selectedAccountId ? `&accountId=${selectedAccountId}` : '';
 
   useEffect(() => {
-    apiGet<PerformanceData>('/analytics/performance').then(setPerf).catch(() => {});
-    apiGet<BehaviorData>('/analytics/behavior').then(setBehav).catch(() => {});
-  }, []);
+    apiGet<PerformanceData>(`/analytics/performance?t=${Date.now()}${acctParam}`).then(setPerf).catch(() => {});
+    apiGet<BehaviorData>(`/analytics/behavior?t=${Date.now()}${acctParam}`).then(setBehav).catch(() => {});
+  }, [acctParam]);
 
   const pnlData = perf
     ? perfView === 'daily' ? perf.dailyPnl
@@ -62,7 +65,7 @@ export default function Analytics() {
     else if (pf === 0) { gp = 0; gl = Math.abs(tp); }
     else { gl = tp / (pf - 1); gp = pf * gl; }
     if (wins > 0) avgWin = formatPnl(gp / wins);
-    if (losses > 0) avgLoss = formatPnl(gl / losses);
+    if (losses > 0) avgLoss = formatPnl(-gl / losses);
   }
 
   const bestWeekday = behav ? [...behav.weekday].sort((a, b) => b.pnl - a.pnl)[0] : null;
@@ -78,14 +81,14 @@ export default function Analytics() {
       </div>
 
       <SectionHeader title="Section 1: Performance Scorecards" />
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+      <div className="stagger-fade-in grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
         {perf ? (
           <>
             <KpiBlock label="Total P&L" value={formatPnl(perf.totalPnL)} isPnl />
             <KpiBlock label="Win Rate" value={totalTrades > 0 ? `${((wins / totalTrades) * 100).toFixed(1)}%` : '---'} />
             <KpiBlock label="Profit Factor" value={perf.profitFactor === -1 ? '∞' : perf.profitFactor.toFixed(2)} />
             <KpiBlock label="Expectancy" value={formatPnl(perf.expectancy)} isPnl />
-            <KpiBlock label="Max Drawdown" value={formatPnl(perf.maxDrawdown)} isPnl />
+            <KpiBlock label="Max Drawdown" value={formatPnl(-perf.maxDrawdown)} isPnl />
             <KpiBlock label="Total Trades" value={String(perf.totalTrades)} />
             <KpiBlock label="Avg Win" value={avgWin} isPnl />
             <KpiBlock label="Avg Loss" value={avgLoss} isPnl />
@@ -105,15 +108,15 @@ export default function Analytics() {
               <AreaChart data={perf.equityCurve}>
                 <defs>
                   <linearGradient id="eqGrad2" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(170 92% 31%)" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="hsl(170 92% 31%)" stopOpacity={0} />
+                    <stop offset="5%" stopColor="hsl(var(--success))" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.2} />
                 <XAxis dataKey="date" tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 2, fontSize: 11 }} formatter={(v) => [formatPnl(Number(v)), 'P&L']} />
-                <Area type="monotone" dataKey="cumulativePnl" stroke="hsl(170 92% 31%)" fill="url(#eqGrad2)" strokeWidth={1.5} dot={false} />
+                <YAxis tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} domain={[dataMin => Math.floor(dataMin * 0.998), dataMax => Math.ceil(dataMax * 1.002)]} tickFormatter={(v) => v >= 1000 ? `$${(v / 1000).toFixed(1)}k` : `$${v}`} />
+                <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 2, fontSize: 11 }} cursor={{ stroke: 'hsl(var(--muted-foreground))', fill: 'hsl(var(--muted-foreground))', fillOpacity: 0.08, strokeWidth: 1 }} formatter={(v) => [`$${Number(v).toLocaleString()}`, 'Balance']} />
+                <Area type="monotone" dataKey="balance" stroke="hsl(var(--success))" fill="url(#eqGrad2)" strokeWidth={1.5} dot={{ r: 2, fill: 'hsl(var(--success))', stroke: 'none' }} />
               </AreaChart>
             </ResponsiveContainer>
           ) : <div className="h-[280px] flex items-center justify-center text-xs text-muted-foreground">Loading...</div>}
@@ -133,8 +136,12 @@ export default function Analytics() {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.2} />
                 <XAxis dataKey="date" tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 2, fontSize: 11 }} formatter={(v) => [formatPnl(Number(v)), 'P&L']} />
-                <Bar dataKey="pnl" fill="hsl(170 92% 31%)" radius={[1, 1, 0, 0]} maxBarSize={20} />
+                <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 2, fontSize: 11 }} cursor={{ stroke: 'hsl(var(--muted-foreground))', fill: 'hsl(var(--muted-foreground))', fillOpacity: 0.08, strokeWidth: 1 }} formatter={(v) => [formatPnl(Number(v)), 'P&L']} />
+                <Bar dataKey="pnl" radius={[1, 1, 0, 0]} maxBarSize={20}>
+                  {pnlData.map((entry, idx) => (
+                    <Cell key={idx} fill={entry.pnl >= 0 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           ) : <div className="h-[250px] flex items-center justify-center text-xs text-muted-foreground">Loading...</div>}
@@ -160,8 +167,12 @@ export default function Analytics() {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.2} />
                   <XAxis dataKey="hour" tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 2, fontSize: 11 }} formatter={(v) => [formatPnl(Number(v)), 'P&L']} />
-                  <Bar dataKey="pnl" fill="hsl(170 92% 31%)" radius={[1, 1, 0, 0]} maxBarSize={16} />
+                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 2, fontSize: 11 }} cursor={{ stroke: 'hsl(var(--muted-foreground))', fill: 'hsl(var(--muted-foreground))', fillOpacity: 0.08, strokeWidth: 1 }} formatter={(v) => [formatPnl(Number(v)), 'P&L']} />
+                  <Bar dataKey="pnl" radius={[1, 1, 0, 0]} maxBarSize={16}>
+                    {behav.hourly.map((entry, idx) => (
+                      <Cell key={idx} fill={entry.pnl >= 0 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -170,8 +181,12 @@ export default function Analytics() {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.2} />
                   <XAxis dataKey="hour" tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} unit="%" domain={[0, 100]} />
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 2, fontSize: 11 }} formatter={(v) => [`${v}%`, 'Win Rate']} />
-                  <Bar dataKey="winRate" fill="hsl(217 100% 60%)" radius={[1, 1, 0, 0]} maxBarSize={16} />
+                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 2, fontSize: 11 }} cursor={{ stroke: 'hsl(var(--muted-foreground))', fill: 'hsl(var(--muted-foreground))', fillOpacity: 0.08, strokeWidth: 1 }} formatter={(v) => [`${v}%`, 'Win Rate']} />
+                  <Bar dataKey="winRate" radius={[1, 1, 0, 0]} maxBarSize={16}>
+                    {behav.hourly.map((entry, idx) => (
+                      <Cell key={idx} fill={entry.winRate >= 50 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             )
@@ -200,10 +215,10 @@ export default function Analytics() {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.2} />
                   <XAxis dataKey="day" tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 2, fontSize: 11 }} formatter={(v) => [formatPnl(Number(v)), 'P&L']} />
+                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 2, fontSize: 11 }} cursor={{ stroke: 'hsl(var(--muted-foreground))', fill: 'hsl(var(--muted-foreground))', fillOpacity: 0.08, strokeWidth: 1 }} formatter={(v) => [formatPnl(Number(v)), 'P&L']} />
                   <Bar dataKey="pnl" radius={[1, 1, 0, 0]} maxBarSize={24}>
                     {behav.weekday.map((entry, idx) => (
-                      <rect key={idx} fill={entry.pnl >= 0 ? 'hsl(170 92% 31%)' : 'hsl(357 88% 57%)'} />
+                      <Cell key={idx} fill={entry.pnl >= 0 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -237,9 +252,16 @@ export default function Analytics() {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.2} />
                   <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 2, fontSize: 11 }} formatter={(v) => [formatPnl(Number(v)), 'P&L']} />
+                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 2, fontSize: 11 }} cursor={{ stroke: 'hsl(var(--muted-foreground))', fill: 'hsl(var(--muted-foreground))', fillOpacity: 0.08, strokeWidth: 1 }} formatter={(v) => [formatPnl(Number(v)), 'P&L']} />
                   <Legend wrapperStyle={{ fontSize: 10 }} />
-                  <Bar dataKey="pnl" fill="hsl(170 92% 31%)" radius={[1, 1, 0, 0]} maxBarSize={40} name="P&L" />
+                  <Bar dataKey="pnl" radius={[1, 1, 0, 0]} maxBarSize={40} name="P&L">
+                    {[
+                      { name: 'Long', pnl: behav.direction.long.pnl },
+                      { name: 'Short', pnl: behav.direction.short.pnl },
+                    ].map((entry, idx) => (
+                      <Cell key={idx} fill={entry.pnl >= 0 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
               <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
@@ -283,20 +305,20 @@ export default function Analytics() {
       <div className="h-px bg-border/50" />
 
       <SectionHeader title="Section 4: Risk Metrics" />
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
-        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3">
+      <div className="stagger-fade-in grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3 card-hover">
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Max Drawdown</p>
-          <p className="text-lg font-bold tabular-nums mt-1 text-destructive">{perf ? formatPnl(perf.maxDrawdown) : '---'}</p>
+          <p className="text-lg font-bold tabular-nums mt-1 text-destructive">{perf ? formatPnl(-perf.maxDrawdown) : '---'}</p>
         </div>
-        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3">
+        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3 card-hover">
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Win Streak</p>
           <p className="text-lg font-bold tabular-nums mt-1 text-success">{perf ? String(perf.winStreak) : '---'}</p>
         </div>
-        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3">
+        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3 card-hover">
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Lose Streak</p>
           <p className="text-lg font-bold tabular-nums mt-1 text-destructive">{perf ? String(perf.loseStreak) : '---'}</p>
         </div>
-        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3">
+        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3 card-hover">
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Avg Quantity</p>
           <p className="text-lg font-bold tabular-nums mt-1">{behav ? behav.execution.avgQty.toFixed(1) : '---'}</p>
         </div>

@@ -1,8 +1,6 @@
-import { useState, useEffect } from 'react';
 import { LogOut, Bell, Menu } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { apiGet } from '@/lib/api';
-import type { Account } from '@/types';
+import { useSelectedAccount } from '@/contexts/SelectedAccountContext';
 
 interface TopBarProps {
   onMenuClick: () => void;
@@ -10,11 +8,7 @@ interface TopBarProps {
 
 export default function TopBar({ onMenuClick }: TopBarProps) {
   const { user, logout } = useAuth();
-  const [accounts, setAccounts] = useState<Account[]>([]);
-
-  useEffect(() => {
-    apiGet<Account[]>('/accounts').then(setAccounts).catch(() => {});
-  }, []);
+  const { accounts, selectedAccountId, setSelectedAccountId } = useSelectedAccount();
 
   return (
     <header className="flex h-14 items-center justify-between border-b border-[hsl(var(--tv-border))] bg-background px-3 md:px-5">
@@ -22,10 +16,10 @@ export default function TopBar({ onMenuClick }: TopBarProps) {
         <button onClick={onMenuClick} className="flex md:hidden h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
           <Menu className="h-4 w-4" />
         </button>
-        <select className="h-7 rounded border border-input bg-background px-2 text-xs text-muted-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring max-w-[140px] md:max-w-none">
+        <select value={selectedAccountId} onChange={(e) => setSelectedAccountId(e.target.value)} className="h-7 rounded border border-input bg-background px-2 text-xs text-muted-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring max-w-[140px] md:max-w-none">
           <option value="">All Accounts</option>
           {accounts.map((a) => (
-            <option key={a.id} value={a.id}>{a.name}</option>
+            <option key={a.id} value={a.id}>{a.name}{a.initialCapital ? ` ($${a.initialCapital.toLocaleString()})` : ''}</option>
           ))}
         </select>
       </div>

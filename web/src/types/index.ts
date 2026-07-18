@@ -12,6 +12,7 @@ export interface Account {
   id: string;
   name: string;
   description: string | null;
+  initialCapital: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -21,12 +22,18 @@ export interface KpiData {
   todayTrades: number;
   weekPnl: number;
   weekTrades: number;
+  weekGrossLoss: number;
   monthPnl: number;
   monthTrades: number;
   totalPnl: number;
   totalTrades: number;
   winRate: number;
   profitFactor: number;
+  avgWin: number;
+  avgLoss: number;
+  bestTrade: number;
+  worstTrade: number;
+  maxDrawdown: number;
 }
 
 export interface CalendarDay {
@@ -75,7 +82,7 @@ export interface ImportHistory {
 }
 
 export interface PerformanceData {
-  equityCurve: { date: string; cumulativePnl: number }[];
+  equityCurve: { date: string; balance: number }[];
   dailyPnl: { date: string; pnl: number; trades: number }[];
   weeklyPnl: { week: string; pnl: number; trades: number }[];
   monthlyPnl: { month: string; pnl: number; trades: number }[];
@@ -86,6 +93,32 @@ export interface PerformanceData {
   loseStreak: number;
   totalTrades: number;
   totalPnL: number;
+}
+
+export interface DailySession {
+  date: string;
+  totalPnl: number;
+  totalTrades: number;
+  wins: number;
+  losses: number;
+  winRate: number;
+  profitFactor: number;
+  bestTrade: number;
+  worstTrade: number;
+  avgWinner: number;
+  avgLoser: number;
+  avgHoldMinutes: number;
+  firstTradeTime: string | null;
+  lastTradeTime: string | null;
+  screenshotStatus: 'complete' | 'partial' | 'none';
+  trades: Trade[];
+}
+
+export interface DailySessionsResponse {
+  sessions: DailySession[];
+  total: number;
+  page: number;
+  limit: number;
 }
 
 export interface BehaviorData {

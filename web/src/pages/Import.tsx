@@ -85,15 +85,19 @@ export default function Import() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3">
+        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3 card-hover">
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Account</p>
-          <p className="text-sm font-medium tabular-nums mt-1">{selectedAccountId ? accounts.find(a => a.id === selectedAccountId)?.name ?? 'Selected' : 'Not selected'}</p>
+          <p className="text-sm font-medium tabular-nums mt-1">
+            {selectedAccountId
+              ? (() => { const a = accounts.find(x => x.id === selectedAccountId); return a ? `${a.name}${a.initialCapital ? ` ($${a.initialCapital.toLocaleString()})` : ''}` : 'Selected'; })()
+              : 'Not selected'}
+          </p>
         </div>
-        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3">
+        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3 card-hover">
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground">File</p>
           <p className="text-sm font-medium tabular-nums mt-1">{selectedFile?.name ?? 'No file'}</p>
         </div>
-        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3">
+        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3 card-hover">
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground">System Status</p>
           <p className="text-sm font-medium tabular-nums mt-1 text-success">Ready</p>
         </div>
@@ -161,7 +165,7 @@ export default function Import() {
           <select value={selectedAccountId} onChange={(e) => setSelectedAccountId(e.target.value)}
             className="h-8 rounded border border-input bg-background px-2.5 text-xs ring-offset-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" required>
             <option value="">Select Account</option>
-            {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+            {accounts.map((a) => <option key={a.id} value={a.id}>{a.name}{a.initialCapital ? ` ($${a.initialCapital.toLocaleString()})` : ''}</option>)}
           </select>
 
           <Button type="submit" disabled={!selectedAccountId || !selectedFile || importing} className="h-8 text-xs">

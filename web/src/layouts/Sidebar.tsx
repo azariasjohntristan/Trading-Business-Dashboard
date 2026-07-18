@@ -2,7 +2,6 @@ import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
-  CalendarDays,
   BarChart3,
   BookOpen,
   Upload,
@@ -22,7 +21,6 @@ interface SidebarProps {
 
 const links = [
   { to: '/dashboard', label: 'Command Center', icon: LayoutDashboard },
-  { to: '/calendar', label: 'Trading Calendar', icon: CalendarDays },
   { to: '/analytics', label: 'Analytics', icon: BarChart3 },
   { to: '/trades', label: 'Trade Journal', icon: BookOpen },
   { to: '/import', label: 'Import Center', icon: Upload },

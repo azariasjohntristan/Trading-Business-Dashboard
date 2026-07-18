@@ -45,10 +45,19 @@ router.get('/stats', authMiddleware, async (_req, res) => {
         if (dd > maxDrawdown) maxDrawdown = dd;
       }
 
+      const initialCapital = a.initialCapital ? Number(a.initialCapital) : null;
+      const currentBalance = initialCapital !== null ? initialCapital + totalPnl : null;
+      const returnPct = initialCapital !== null && initialCapital !== 0
+        ? Math.round((totalPnl / initialCapital) * 10000) / 100
+        : null;
+
       return {
         id: a.id,
         name: a.name,
         description: a.description,
+        initialCapital,
+        currentBalance: currentBalance !== null ? Math.round(currentBalance * 100) / 100 : null,
+        returnPct,
         totalPnl: Math.round(totalPnl * 100) / 100,
         totalTrades: pnls.length,
         winRate: Math.round(winRate * 100) / 100,
@@ -67,13 +76,17 @@ router.get('/stats', authMiddleware, async (_req, res) => {
 
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { name, description, initialCapital } = req.body;
     if (!name || !name.trim()) {
       return res.status(400).json({ error: 'Name is required' });
     }
 
     const account = await prisma.account.create({
-      data: { name: name.trim(), description: description || null },
+      data: {
+        name: name.trim(),
+        description: description || null,
+        initialCapital: initialCapital != null ? initialCapital : null,
+      },
     });
     res.status(201).json(account);
   } catch (error) {
@@ -84,7 +97,7 @@ router.post('/', authMiddleware, async (req, res) => {
 
 router.put('/:id', authMiddleware, async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { name, description, initialCapital } = req.body;
 
     const existing = await prisma.account.findUnique({ where: { id: req.params.id as string } });
     if (!existing) {
@@ -96,6 +109,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
       data: {
         name: name?.trim() ?? existing.name,
         description: description !== undefined ? (description || null) : existing.description,
+        initialCapital: initialCapital !== undefined ? (initialCapital != null ? initialCapital : null) : existing.initialCapital,
       },
     });
     res.json(account);

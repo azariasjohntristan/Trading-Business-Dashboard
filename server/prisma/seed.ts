@@ -10,6 +10,7 @@ async function main() {
       id: '00000000-0000-0000-0000-000000000001',
       name: 'Personal Account',
       description: 'Main personal trading account',
+      initialCapital: 25000,
     },
   });
 
@@ -20,6 +21,7 @@ async function main() {
       id: '00000000-0000-0000-0000-000000000002',
       name: 'Prop Firm Account',
       description: 'Prop firm evaluation account',
+      initialCapital: 50000,
     },
   });
 
@@ -30,6 +32,7 @@ async function main() {
       id: '00000000-0000-0000-0000-000000000003',
       name: 'Broker Account',
       description: 'Broker trading account',
+      initialCapital: 10000,
     },
   });
 

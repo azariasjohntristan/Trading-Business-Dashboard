@@ -12,23 +12,10 @@ export default function Settings() {
   const [newPassword, setNewPassword] = useState('');
   const [pwMessage, setPwMessage] = useState('');
   const [pwError, setPwError] = useState('');
-  const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
 
   useEffect(() => {
     apiGet<HealthCheck>('/health').then(setHealth).catch(() => {});
     apiGet<{ filename: string; importedAt: string }[]>('/import/history').then((h) => { if (h.length > 0) setLastImport(h[0]); }).catch(() => {});
-  }, []);
-
-  const toggleTheme = () => {
-    const next = !dark;
-    setDark(next);
-    document.documentElement.classList.toggle('dark', next);
-    localStorage.setItem('theme', next ? 'dark' : 'light');
-  };
-
-  useEffect(() => {
-    const saved = localStorage.getItem('theme');
-    if (saved === 'dark') { setDark(true); document.documentElement.classList.add('dark'); }
   }, []);
 
   const handlePasswordChange = async (e: React.FormEvent) => {
@@ -51,19 +38,19 @@ export default function Settings() {
 
       <SectionHeader title="System Health" />
       <div className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3">
+        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3 card-hover">
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Application</p>
           <p className="text-sm font-bold text-success mt-1">Running</p>
           <p className="text-[10px] text-muted-foreground mt-1">TradeOS v1.0</p>
         </div>
-        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3">
+        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3 card-hover">
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Database</p>
           <p className={cn('text-sm font-bold mt-1', health?.database === 'connected' ? 'text-success' : 'text-destructive')}>
             {health?.database === 'connected' ? 'Connected' : 'Disconnected'}
           </p>
           <p className="text-[10px] text-muted-foreground mt-1">PostgreSQL 17</p>
         </div>
-        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3">
+        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3 card-hover">
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Last Import</p>
           {lastImport ? (
             <><p className="text-xs font-medium mt-1">{lastImport.filename}</p><p className="text-[10px] text-muted-foreground">{new Date(lastImport.importedAt).toLocaleString()}</p></>
@@ -88,19 +75,6 @@ export default function Settings() {
           {pwError && <p className="text-xs text-destructive">{pwError}</p>}
           <Button type="submit" size="sm" className="h-7 text-xs">Update Password</Button>
         </form>
-      </div>
-
-      <SectionHeader title="Appearance" />
-      <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium">Dark Mode</p>
-            <p className="text-[11px] text-muted-foreground">Toggle dark/light theme</p>
-          </div>
-          <button onClick={toggleTheme} className={cn('relative h-6 w-11 rounded-full transition-colors', dark ? 'bg-primary' : 'bg-muted')}>
-            <span className={cn('absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition-transform', dark && 'translate-x-5')} />
-          </button>
-        </div>
       </div>
 
       <SectionHeader title="Timezone" />

@@ -21,7 +21,7 @@ export function KpiCard({ label, value, isCurrency, trend, subtitle, comparison,
       <span className="text-[10px] md:text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{label}</span>
       <div className="mt-1 flex items-baseline gap-2">
         <p className={cn(
-          'text-xl md:text-2xl font-bold tabular-nums tracking-tight leading-none',
+          'text-xl md:text-2xl font-bold tabular-nums tracking-tight leading-none animate-count-up',
           isCurrency && (isNegative ? 'text-destructive' : 'text-success'),
         )}>
           {value}

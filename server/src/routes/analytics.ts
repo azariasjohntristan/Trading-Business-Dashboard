@@ -8,9 +8,18 @@ function parseDuration(minutes: number): number {
   return minutes;
 }
 
-router.get('/performance', authMiddleware, async (_req, res) => {
+router.get('/performance', authMiddleware, async (req, res) => {
   try {
+    const accountId = req.query.accountId as string | undefined;
+    const accountFilter = accountId ? { accountId } : undefined;
+
+    const accounts = accountId
+      ? await prisma.account.findMany({ where: { id: accountId }, select: { initialCapital: true } })
+      : await prisma.account.findMany({ select: { initialCapital: true } });
+    const totalInitialCapital = accounts.reduce((sum, a) => sum + Number(a.initialCapital ?? 0), 0);
+
     const allTrades = await prisma.trade.findMany({
+      where: accountFilter,
       orderBy: { soldTimestamp: 'asc' },
       select: {
         pnl: true,
@@ -21,9 +30,9 @@ router.get('/performance', authMiddleware, async (_req, res) => {
       },
     });
 
-    const equityCurve: { date: string; cumulativePnl: number }[] = [];
-    let runningTotal = 0;
-    let peak = 0;
+    const equityCurve: { date: string; balance: number }[] = [];
+    let runningTotal = totalInitialCapital;
+    let peak = totalInitialCapital;
     let maxDrawdown = 0;
     let winStreak = 0;
     let loseStreak = 0;
@@ -36,7 +45,7 @@ router.get('/performance', authMiddleware, async (_req, res) => {
       const pnl = Number(t.pnl);
       runningTotal += pnl;
       const dateStr = t.soldTimestamp.toISOString().split('T')[0];
-      equityCurve.push({ date: dateStr, cumulativePnl: Math.round(runningTotal * 100) / 100 });
+      equityCurve.push({ date: dateStr, balance: Math.round(runningTotal * 100) / 100 });
 
       if (runningTotal > peak) peak = runningTotal;
       const drawdown = peak - runningTotal;
@@ -113,9 +122,13 @@ router.get('/performance', authMiddleware, async (_req, res) => {
   }
 });
 
-router.get('/behavior', authMiddleware, async (_req, res) => {
+router.get('/behavior', authMiddleware, async (req, res) => {
   try {
+    const accountId = req.query.accountId as string | undefined;
+    const accountFilter = accountId ? { accountId } : undefined;
+
     const allTrades = await prisma.trade.findMany({
+      where: accountFilter,
       select: {
         pnl: true,
         boughtTimestamp: true,
