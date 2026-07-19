@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { apiGet, apiDelete } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { SessionCard, SessionDrawer, formatPnl } from '@/design-system';
+import { SessionCard, SessionDrawer } from '@/design-system';
 import { Search, SlidersHorizontal, X, RefreshCw } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useSelectedAccount } from '@/contexts/SelectedAccountContext';
 import type { DailySession, DailySessionsResponse } from '@/types';
 
@@ -26,9 +25,6 @@ export default function Trades() {
   useEffect(() => {
     setAccountFilter(selectedAccountId);
   }, [selectedAccountId]);
-
-  const allPnl = sessions.reduce((s, se) => s + se.totalPnl, 0);
-  const allTrades = sessions.reduce((s, se) => s + se.totalTrades, 0);
 
   useEffect(() => {
     setLoading(true);
@@ -76,21 +72,6 @@ export default function Trades() {
         <button onClick={() => setFilterOpen(true)} className="inline-flex items-center gap-1.5 h-8 rounded-lg border border-border bg-card px-3 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-success/30 transition-colors">
           <SlidersHorizontal className="h-3.5 w-3.5" /> Filters{hasFilters ? ` (${[search, directionFilter, accountFilter, dateFrom, dateTo].filter(Boolean).length})` : ''}
         </button>
-      </div>
-
-      <div className="grid grid-cols-3 gap-3 stagger-fade-in">
-        <div className="rounded-lg border border-border bg-card p-3 card-hover">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Sessions</p>
-          <p className="text-xl font-bold tabular-nums mt-0.5 animate-count-up">{total}</p>
-        </div>
-        <div className="rounded-lg border border-border bg-card p-3 card-hover">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Total Trades</p>
-          <p className="text-xl font-bold tabular-nums mt-0.5 animate-count-up">{allTrades}</p>
-        </div>
-        <div className="rounded-lg border border-border bg-card p-3 card-hover">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Total P&L</p>
-          <p className={cn('text-xl font-bold tabular-nums mt-0.5 animate-count-up', allPnl >= 0 ? 'text-success' : 'text-destructive')}>{formatPnl(allPnl)}</p>
-        </div>
       </div>
 
       {loading ? (

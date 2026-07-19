@@ -57,6 +57,14 @@ export default function Analytics() {
 
   let avgWin: string = '---';
   let avgLoss: string = '---';
+  let avgRrr: string = '---';
+  let grossProfitStr: string = '---';
+  let grossLossStr: string = '---';
+  let recoveryFactor: string = '---';
+  let profitableDaysPct: string = '---';
+  let avgDayPnl: string = '---';
+  let bestDayStr: string = '---';
+  let worstDayStr: string = '---';
   if (perf && behav) {
     const pf = perf.profitFactor;
     const tp = perf.totalPnL;
@@ -66,6 +74,21 @@ export default function Analytics() {
     else { gl = tp / (pf - 1); gp = pf * gl; }
     if (wins > 0) avgWin = formatPnl(gp / wins);
     if (losses > 0) avgLoss = formatPnl(-gl / losses);
+    const winVal = wins > 0 ? gp / wins : 0;
+    const lossVal = losses > 0 ? gl / losses : 0;
+    if (lossVal > 0) avgRrr = (winVal / lossVal).toFixed(2);
+    grossProfitStr = formatPnl(gp);
+    grossLossStr = formatPnl(-gl);
+    recoveryFactor = perf.maxDrawdown > 0 ? (perf.totalPnL / perf.maxDrawdown).toFixed(2) : '---';
+    const totalDays = perf.dailyPnl.length;
+    const profitableDays = perf.dailyPnl.filter(d => d.pnl > 0).length;
+    profitableDaysPct = totalDays > 0 ? ((profitableDays / totalDays) * 100).toFixed(1) : '---';
+    avgDayPnl = totalDays > 0 ? formatPnl(perf.totalPnL / totalDays) : '---';
+    if (totalDays > 0) {
+      const sorted = [...perf.dailyPnl].sort((a, b) => b.pnl - a.pnl);
+      bestDayStr = formatPnl(sorted[0].pnl);
+      worstDayStr = formatPnl(sorted[sorted.length - 1].pnl);
+    }
   }
 
   const bestWeekday = behav ? [...behav.weekday].sort((a, b) => b.pnl - a.pnl)[0] : null;
@@ -89,12 +112,16 @@ export default function Analytics() {
             <KpiBlock label="Profit Factor" value={perf.profitFactor === -1 ? '∞' : perf.profitFactor.toFixed(2)} />
             <KpiBlock label="Expectancy" value={formatPnl(perf.expectancy)} isPnl />
             <KpiBlock label="Max Drawdown" value={formatPnl(-perf.maxDrawdown)} isPnl />
+            <KpiBlock label="Recovery Factor" value={recoveryFactor} />
             <KpiBlock label="Total Trades" value={String(perf.totalTrades)} />
             <KpiBlock label="Avg Win" value={avgWin} isPnl />
             <KpiBlock label="Avg Loss" value={avgLoss} isPnl />
+            <KpiBlock label="Avg Risk:Reward" value={avgRrr} />
+            <KpiBlock label="Gross Profit" value={grossProfitStr} isPnl />
+            <KpiBlock label="Gross Loss" value={grossLossStr} isPnl />
           </>
         ) : (
-          Array.from({ length: 8 }).map((_, i) => <KpiCardSkeleton key={i} />)
+          Array.from({ length: 12 }).map((_, i) => <KpiCardSkeleton key={i} />)
         )}
       </div>
 
@@ -136,7 +163,7 @@ export default function Analytics() {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.2} />
                 <XAxis dataKey="date" tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 2, fontSize: 11 }} cursor={{ stroke: 'hsl(var(--muted-foreground))', fill: 'hsl(var(--muted-foreground))', fillOpacity: 0.08, strokeWidth: 1 }} formatter={(v) => [formatPnl(Number(v)), 'P&L']} />
+                <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 2, fontSize: 11 }} cursor={{ stroke: 'hsl(var(--muted-foreground))', fill: 'hsl(var(--muted-foreground))', fillOpacity: 0.08, strokeWidth: 1 }} formatter={(v) => { const n = Number(v); return [<span key="val" className={n >= 0 ? 'text-success' : 'text-destructive'}>{formatPnl(n)}</span>, 'P&L']; }} />
                 <Bar dataKey="pnl" radius={[1, 1, 0, 0]} maxBarSize={20}>
                   {pnlData.map((entry, idx) => (
                     <Cell key={idx} fill={entry.pnl >= 0 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'} />
@@ -167,7 +194,7 @@ export default function Analytics() {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.2} />
                   <XAxis dataKey="hour" tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 2, fontSize: 11 }} cursor={{ stroke: 'hsl(var(--muted-foreground))', fill: 'hsl(var(--muted-foreground))', fillOpacity: 0.08, strokeWidth: 1 }} formatter={(v) => [formatPnl(Number(v)), 'P&L']} />
+                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 2, fontSize: 11 }} cursor={{ stroke: 'hsl(var(--muted-foreground))', fill: 'hsl(var(--muted-foreground))', fillOpacity: 0.08, strokeWidth: 1 }} formatter={(v) => { const n = Number(v); return [<span key="val" className={n >= 0 ? 'text-success' : 'text-destructive'}>{formatPnl(n)}</span>, 'P&L']; }} />
                   <Bar dataKey="pnl" radius={[1, 1, 0, 0]} maxBarSize={16}>
                     {behav.hourly.map((entry, idx) => (
                       <Cell key={idx} fill={entry.pnl >= 0 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'} />
@@ -215,7 +242,7 @@ export default function Analytics() {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.2} />
                   <XAxis dataKey="day" tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 2, fontSize: 11 }} cursor={{ stroke: 'hsl(var(--muted-foreground))', fill: 'hsl(var(--muted-foreground))', fillOpacity: 0.08, strokeWidth: 1 }} formatter={(v) => [formatPnl(Number(v)), 'P&L']} />
+                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 2, fontSize: 11 }} cursor={{ stroke: 'hsl(var(--muted-foreground))', fill: 'hsl(var(--muted-foreground))', fillOpacity: 0.08, strokeWidth: 1 }} formatter={(v) => { const n = Number(v); return [<span key="val" className={n >= 0 ? 'text-success' : 'text-destructive'}>{formatPnl(n)}</span>, 'P&L']; }} />
                   <Bar dataKey="pnl" radius={[1, 1, 0, 0]} maxBarSize={24}>
                     {behav.weekday.map((entry, idx) => (
                       <Cell key={idx} fill={entry.pnl >= 0 ? 'hsl(var(--success))' : 'hsl(var(--destructive))'} />
@@ -252,7 +279,7 @@ export default function Analytics() {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.2} />
                   <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 2, fontSize: 11 }} cursor={{ stroke: 'hsl(var(--muted-foreground))', fill: 'hsl(var(--muted-foreground))', fillOpacity: 0.08, strokeWidth: 1 }} formatter={(v) => [formatPnl(Number(v)), 'P&L']} />
+                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 2, fontSize: 11 }} cursor={{ stroke: 'hsl(var(--muted-foreground))', fill: 'hsl(var(--muted-foreground))', fillOpacity: 0.08, strokeWidth: 1 }} formatter={(v) => { const n = Number(v); return [<span key="val" className={n >= 0 ? 'text-success' : 'text-destructive'}>{formatPnl(n)}</span>, 'P&L']; }} />
                   <Legend wrapperStyle={{ fontSize: 10 }} />
                   <Bar dataKey="pnl" radius={[1, 1, 0, 0]} maxBarSize={40} name="P&L">
                     {[
@@ -304,24 +331,16 @@ export default function Analytics() {
 
       <div className="h-px bg-border/50" />
 
-      <SectionHeader title="Section 4: Risk Metrics" />
+      <SectionHeader title="Section 4: Risk & Day Metrics" />
       <div className="stagger-fade-in grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
-        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3 card-hover">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Max Drawdown</p>
-          <p className="text-lg font-bold tabular-nums mt-1 text-destructive">{perf ? formatPnl(-perf.maxDrawdown) : '---'}</p>
-        </div>
-        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3 card-hover">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Win Streak</p>
-          <p className="text-lg font-bold tabular-nums mt-1 text-success">{perf ? String(perf.winStreak) : '---'}</p>
-        </div>
-        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3 card-hover">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Lose Streak</p>
-          <p className="text-lg font-bold tabular-nums mt-1 text-destructive">{perf ? String(perf.loseStreak) : '---'}</p>
-        </div>
-        <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3 card-hover">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Avg Quantity</p>
-          <p className="text-lg font-bold tabular-nums mt-1">{behav ? behav.execution.avgQty.toFixed(1) : '---'}</p>
-        </div>
+        <KpiBlock label="Max Drawdown" value={perf ? formatPnl(-perf.maxDrawdown) : '---'} isPnl />
+        <KpiBlock label="Win Streak" value={perf ? String(perf.winStreak) : '---'} />
+        <KpiBlock label="Lose Streak" value={perf ? String(perf.loseStreak) : '---'} />
+        <KpiBlock label="Avg Quantity" value={behav ? behav.execution.avgQty.toFixed(1) : '---'} />
+        <KpiBlock label="Profitable Days" value={profitableDaysPct !== '---' ? `${profitableDaysPct}%` : '---'} />
+        <KpiBlock label="Avg Day P&L" value={avgDayPnl} isPnl />
+        <KpiBlock label="Best Day" value={bestDayStr} isPnl />
+        <KpiBlock label="Worst Day" value={worstDayStr} isPnl />
       </div>
     </div>
   );

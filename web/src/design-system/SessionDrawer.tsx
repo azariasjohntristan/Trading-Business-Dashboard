@@ -1,10 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import { apiPatch } from '@/lib/api';
 import { formatPnl } from './format';
 import { getDayScreenshotLink, setDayScreenshotLink } from '@/lib/dayScreenshot';
-import { X, ExternalLink, Camera, ChevronDown, ChevronUp, Clock, BarChart3, Check, Image, TrendingUp, TrendingDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { X, ChevronDown, ChevronUp, Clock, BarChart3, Check, Image, TrendingUp, TrendingDown, Camera, ExternalLink } from 'lucide-react';
 import type { DailySession, Trade } from '@/types';
 
 interface SessionDrawerProps {
@@ -14,23 +12,10 @@ interface SessionDrawerProps {
 
 function MergedTrade({ trade, isLast }: { trade: Trade; isLast: boolean }) {
   const [expanded, setExpanded] = useState(false);
-  const [link, setLink] = useState(trade.chartLink ?? '');
-  const [saving, setSaving] = useState(false);
-  const [showDialog, setShowDialog] = useState(false);
   const positive = Number(trade.pnl) >= 0;
   const bought = new Date(trade.boughtTimestamp);
   const sold = new Date(trade.soldTimestamp);
   const time = bought.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-
-  const handleSaveLink = async () => {
-    setSaving(true);
-    try {
-      await apiPatch(`/trades/${trade.id}`, { chartLink: link || null });
-      trade.chartLink = link || null;
-      setShowDialog(false);
-    } catch { /* ignore */ }
-    finally { setSaving(false); }
-  };
 
   return (
     <div className="group">
@@ -62,32 +47,10 @@ function MergedTrade({ trade, isLast }: { trade: Trade; isLast: boolean }) {
                 <div className="flex justify-between"><span className="text-muted-foreground">Entry Time</span><span className="tabular-nums font-medium">{bought.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Exit Time</span><span className="tabular-nums font-medium">{sold.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}</span></div>
               </div>
-              <div className="pt-1.5 border-t border-border/60">
-                {trade.chartLink ? (
-                  <a href={trade.chartLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[11px] font-medium text-primary hover:underline"><ExternalLink className="h-3 w-3" /> View Screenshot</a>
-                ) : (
-                  <button onClick={() => setShowDialog(true)} className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"><Camera className="h-3 w-3" /> Add Screenshot</button>
-                )}
-              </div>
             </div>
           )}
         </div>
       </div>
-
-      {showDialog && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60" onClick={() => setShowDialog(false)}>
-          <div className="w-full max-w-sm rounded-lg border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-bg))] p-5 shadow-xl backdrop-blur-sm" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-sm font-semibold mb-3">Paste Notion Link</h3>
-            <input type="url" value={link} onChange={(e) => setLink(e.target.value)}
-              placeholder="https://www.notion.so/..."
-              className="mb-4 h-8 w-full rounded border border-input bg-background px-2.5 text-xs ring-offset-background placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" />
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => setShowDialog(false)} className="h-7 text-xs">Cancel</Button>
-              <Button type="button" size="sm" onClick={handleSaveLink} disabled={saving} className="h-7 text-xs">{saving ? 'Saving...' : 'Save'}</Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

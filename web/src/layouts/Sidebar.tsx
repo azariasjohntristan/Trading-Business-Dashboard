@@ -20,7 +20,7 @@ interface SidebarProps {
 }
 
 const links = [
-  { to: '/dashboard', label: 'Command Center', icon: LayoutDashboard },
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/analytics', label: 'Analytics', icon: BarChart3 },
   { to: '/trades', label: 'Trade Journal', icon: BookOpen },
   { to: '/import', label: 'Import Center', icon: Upload },
