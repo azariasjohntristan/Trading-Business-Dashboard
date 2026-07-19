@@ -44,7 +44,7 @@ router.get('/performance', authMiddleware, async (req, res) => {
     for (const t of allTrades) {
       const pnl = Number(t.pnl);
       runningTotal += pnl;
-      const dateStr = t.soldTimestamp.toISOString().split('T')[0];
+      const dateStr = t.soldTimestamp.toISOString();
       equityCurve.push({ date: dateStr, balance: Math.round(runningTotal * 100) / 100 });
 
       if (runningTotal > peak) peak = runningTotal;
