@@ -137,8 +137,8 @@ router.get('/daily-sessions', authMiddleware, async (req, res) => {
           avgWinner: wins.length > 0 ? Math.round((wins.reduce((s, t) => s + Number(t.pnl), 0) / wins.length) * 100) / 100 : 0,
           avgLoser: losses.length > 0 ? Math.round((losses.reduce((s, t) => s + Number(t.pnl), 0) / losses.length) * 100) / 100 : 0,
           avgHoldMinutes,
-          firstTradeTime: times.length > 0 ? times[0].toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) : null,
-          lastTradeTime: times.length > 0 ? times[times.length - 1].toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) : null,
+          firstTradeTime: times.length > 0 ? times[0].toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/New_York' }) : null,
+          lastTradeTime: times.length > 0 ? times[times.length - 1].toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/New_York' }) : null,
           screenshotStatus: trades.length === 0 ? 'none' as const : hasScreenshots === trades.length ? 'complete' as const : hasScreenshots > 0 ? 'partial' as const : 'none' as const,
           trades,
         };

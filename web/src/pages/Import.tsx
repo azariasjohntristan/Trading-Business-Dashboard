@@ -232,7 +232,7 @@ export default function Import() {
                 {history.map((h) => (
                   <tr key={h.id} className="border-b border-[hsl(var(--tv-border))] last:border-0 hover:bg-muted/20">
                     <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">
-                      {new Date(h.importedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      {new Date(h.importedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'America/New_York' })}
                     </td>
                     <td className="px-3 py-2">{h.account.name}</td>
                     <td className="px-3 py-2 text-muted-foreground">{h.filename}</td>

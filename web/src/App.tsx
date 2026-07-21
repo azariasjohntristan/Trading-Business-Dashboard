@@ -6,6 +6,7 @@ import DashboardLayout from '@/layouts/DashboardLayout';
 import Dashboard from '@/pages/Dashboard';
 import Analytics from '@/pages/Analytics';
 import Trades from '@/pages/Trades';
+import Consistency from '@/pages/Consistency';
 import ImportPage from '@/pages/Import';
 import Accounts from '@/pages/Accounts';
 import Settings from '@/pages/Settings';
@@ -23,6 +24,7 @@ export default function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/trades" element={<Trades />} />
+              <Route path="/consistency" element={<Consistency />} />
               <Route path="/import" element={<ImportPage />} />
               <Route path="/accounts" element={<Accounts />} />
               <Route path="/settings" element={<Settings />} />

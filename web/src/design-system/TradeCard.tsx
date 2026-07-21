@@ -49,7 +49,7 @@ export function TradeCard({ trade, onClick, selected }: TradeCardProps) {
           <span>qty {Number(trade.qty).toFixed(2)}</span>
           <span>${Number(trade.buyPrice).toFixed(2)} → ${Number(trade.sellPrice).toFixed(2)}</span>
           <span>{trade.duration ?? '--'}</span>
-          <span>{new Date(trade.soldTimestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+          <span>{new Date(trade.soldTimestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/New_York' })}</span>
         </div>
       </div>
 
@@ -60,8 +60,8 @@ export function TradeCard({ trade, onClick, selected }: TradeCardProps) {
             <div><span className="text-muted-foreground">Exit: </span>${Number(trade.sellPrice).toFixed(2)}</div>
             <div><span className="text-muted-foreground">Qty: </span>{Number(trade.qty).toFixed(2)}</div>
             <div><span className="text-muted-foreground">Duration: </span>{trade.duration ?? '--'}</div>
-            <div><span className="text-muted-foreground">Entry Time: </span>{new Date(trade.boughtTimestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</div>
-            <div><span className="text-muted-foreground">Exit Time: </span>{new Date(trade.soldTimestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</div>
+            <div><span className="text-muted-foreground">Entry Time: </span>{new Date(trade.boughtTimestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'America/New_York' })}</div>
+            <div><span className="text-muted-foreground">Exit Time: </span>{new Date(trade.soldTimestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'America/New_York' })}</div>
             {trade.account?.name && <div><span className="text-muted-foreground">Account: </span>{trade.account.name}</div>}
           </div>
           {trade.chartLink && (

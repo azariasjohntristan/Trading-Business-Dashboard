@@ -16,7 +16,7 @@ export function SessionCard({ session, onClick, selected, onDelete }: SessionCar
   const dayLink = getDayScreenshotLink(date);
   const ssStatus = dayLink ? 'complete' : screenshotStatus;
   const positive = totalPnl >= 0;
-  const dayName = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+  const dayName = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' });
   const symbols = [...new Set(trades.map(t => t.symbol))].join(', ');
   const ssDot = ssStatus === 'complete' ? 'bg-success' : ssStatus === 'partial' ? 'bg-amber-500' : 'bg-muted-foreground';
 
@@ -53,16 +53,16 @@ export function SessionCard({ session, onClick, selected, onDelete }: SessionCar
       </td>
       <td className="py-3 px-3 text-center">
         <div className="inline-flex items-center gap-2 text-xs">
-          <span className="text-success tabular-nums font-medium">{formatPnl(bestTrade)}</span>
+          <span className="text-success tabular-nums font-medium">{bestTrade > 0 ? formatPnl(bestTrade) : '$0.00'}</span>
           <span className="text-muted-foreground/40">/</span>
-          <span className="text-destructive tabular-nums font-medium">{formatPnl(worstTrade)}</span>
+          <span className="text-destructive tabular-nums font-medium">{worstTrade < 0 ? formatPnl(worstTrade) : '$0.00'}</span>
         </div>
       </td>
       <td className="py-3 px-3 text-center">
         <div className="inline-flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="tabular-nums text-success font-medium">{formatPnl(avgWinner)}</span>
+          <span className="tabular-nums text-success font-medium">{avgWinner > 0 ? formatPnl(avgWinner) : '$0.00'}</span>
           <span className="text-muted-foreground/40">/</span>
-          <span className="tabular-nums text-destructive font-medium">{formatPnl(avgLoser)}</span>
+          <span className="tabular-nums text-destructive font-medium">{avgLoser < 0 ? formatPnl(avgLoser) : '$0.00'}</span>
         </div>
       </td>
       <td className="py-3 px-3 text-center">

@@ -15,7 +15,7 @@ function MergedTrade({ trade, isLast }: { trade: Trade; isLast: boolean }) {
   const positive = Number(trade.pnl) >= 0;
   const bought = new Date(trade.boughtTimestamp);
   const sold = new Date(trade.soldTimestamp);
-  const time = bought.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+  const time = bought.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/New_York' });
 
   return (
     <div className="group">
@@ -44,8 +44,8 @@ function MergedTrade({ trade, isLast }: { trade: Trade; isLast: boolean }) {
                 <div className="flex justify-between"><span className="text-muted-foreground">Exit</span><span className="tabular-nums font-medium">${Number(trade.sellPrice).toFixed(2)}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Qty</span><span className="tabular-nums font-medium">{Number(trade.qty).toFixed(2)}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Duration</span><span className="tabular-nums font-medium">{trade.duration ?? '--'}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Entry Time</span><span className="tabular-nums font-medium">{bought.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Exit Time</span><span className="tabular-nums font-medium">{sold.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Entry Time</span><span className="tabular-nums font-medium">{bought.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/New_York' })}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Exit Time</span><span className="tabular-nums font-medium">{sold.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/New_York' })}</span></div>
               </div>
             </div>
           )}
@@ -97,7 +97,7 @@ export function SessionDrawer({ session, onClose }: SessionDrawerProps) {
 
   const { date, totalPnl, totalTrades, wins, winRate, profitFactor, avgWinner, avgLoser, bestTrade, worstTrade, avgHoldMinutes, firstTradeTime, lastTradeTime, trades } = session;
   const positive = totalPnl >= 0;
-  const dayLabel = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  const dayLabel = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' });
 
   const sortedTrades = [...trades].sort((a, b) => new Date(a.boughtTimestamp).getTime() - new Date(b.boughtTimestamp).getTime());
 
@@ -166,11 +166,11 @@ export function SessionDrawer({ session, onClose }: SessionDrawerProps) {
               </div>
               <div className="md:col-span-3 rounded-lg border border-success/15 bg-success/5 p-3">
                 <p className="text-[9px] uppercase tracking-wider text-muted-foreground">Best Trade</p>
-                <p className="text-base font-bold tabular-nums mt-0.5 text-success">{formatPnl(bestTrade)}</p>
+                <p className="text-base font-bold tabular-nums mt-0.5 text-success">{bestTrade > 0 ? formatPnl(bestTrade) : '$0.00'}</p>
               </div>
               <div className="md:col-span-3 rounded-lg border border-destructive/15 bg-destructive/5 p-3">
                 <p className="text-[9px] uppercase tracking-wider text-muted-foreground">Worst Trade</p>
-                <p className="text-base font-bold tabular-nums mt-0.5 text-destructive">{formatPnl(worstTrade)}</p>
+                <p className="text-base font-bold tabular-nums mt-0.5 text-destructive">{worstTrade < 0 ? formatPnl(worstTrade) : '$0.00'}</p>
               </div>
             </div>
 

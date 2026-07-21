@@ -194,7 +194,7 @@ export default function Dashboard() {
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.2} />
               <XAxis dataKey="date" tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} tickFormatter={(v) => v.split('T')[0]} />
               <YAxis tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" axisLine={false} tickLine={false} domain={[dataMin => Math.floor(dataMin * 0.998), dataMax => Math.ceil(dataMax * 1.002)]} tickFormatter={(v) => v >= 1000 ? `$${(v / 1000).toFixed(1)}k` : `$${v}`} />
-              <Tooltip labelFormatter={(l) => new Date(l).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })} contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 2, fontSize: 11 }} cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }} formatter={(v) => { const n = Number(v); return [<span key="val" className={n >= 0 ? 'text-success' : 'text-destructive'}>{`$${n.toLocaleString()}`}</span>, 'Balance']; }} />
+              <Tooltip labelFormatter={(l) => new Date(l).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'America/New_York' })} contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 2, fontSize: 11 }} cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }} formatter={(v) => { const n = Number(v); return [<span key="val" className={n >= 0 ? 'text-success' : 'text-destructive'}>{`$${n.toLocaleString()}`}</span>, 'Balance']; }} />
               <Area type="monotone" dataKey="balance" stroke="hsl(var(--success))" fill="url(#eqGrad)" strokeWidth={1.5} dot={{ r: 2, fill: 'hsl(var(--success))', stroke: 'none' }} />
             </AreaChart>
           </ResponsiveContainer>
@@ -249,7 +249,7 @@ export default function Dashboard() {
                     <span className={`text-right font-bold tabular-nums flex-1 ${pnl >= 0 ? 'text-success' : 'text-destructive'}`}>{formatPnl(pnl)}</span>
                     <span className="text-muted-foreground/60 flex-1 text-center">{formatTime(t.soldTimestamp)}</span>
                     <span className="text-muted-foreground/40 flex-1 text-center">{t.direction}</span>
-                    <span className="text-muted-foreground/40 flex-1 text-right">{new Date(t.soldTimestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                    <span className="text-muted-foreground/40 flex-1 text-right">{new Date(t.soldTimestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/New_York' })}</span>
                   </div>
                 );
               })}

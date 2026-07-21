@@ -131,3 +131,13 @@ export interface BehaviorData {
   };
   execution: { avgQty: number; totalTrades: number };
 }
+
+export interface ConsistencyData {
+  dailyPnl: { date: string; pnl: number }[];
+  totalNetProfit: number;
+  totalGrossProfit: number;
+  bestDay: { date: string; pnl: number } | null;
+  consistencyRatio: number;
+  grossConsistencyRatio: number;
+  tradingDays: number;
+}

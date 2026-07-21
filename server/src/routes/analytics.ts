@@ -256,4 +256,54 @@ router.get('/behavior', authMiddleware, async (req, res) => {
   }
 });
 
+router.get('/consistency', authMiddleware, async (req, res) => {
+  try {
+    const accountId = req.query.accountId as string | undefined;
+    const accountFilter = accountId ? { accountId } : undefined;
+
+    const allTrades = await prisma.trade.findMany({
+      where: accountFilter,
+      select: { pnl: true, tradeDate: true },
+    });
+
+    const dailyMap = new Map<string, number>();
+    for (const t of allTrades) {
+      const dateStr = t.tradeDate.toISOString().split('T')[0];
+      dailyMap.set(dateStr, (dailyMap.get(dateStr) ?? 0) + Number(t.pnl));
+    }
+
+    const dailyPnl = Array.from(dailyMap.entries())
+      .map(([date, pnl]) => ({ date, pnl: Math.round(pnl * 100) / 100 }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    const totalNetProfit = dailyPnl.reduce((s, d) => s + d.pnl, 0);
+    const winningDays = dailyPnl.filter(d => d.pnl > 0);
+    const totalGrossProfit = winningDays.reduce((s, d) => s + d.pnl, 0);
+    const bestDay = winningDays.length > 0
+      ? winningDays.reduce((best, d) => d.pnl > best.pnl ? d : best, winningDays[0])
+      : null;
+
+    const consistencyRatio = bestDay && totalNetProfit > 0
+      ? Math.round((bestDay.pnl / totalNetProfit) * 10000) / 100
+      : 0;
+
+    const grossConsistencyRatio = bestDay && totalGrossProfit > 0
+      ? Math.round((bestDay.pnl / totalGrossProfit) * 10000) / 100
+      : 0;
+
+    res.json({
+      dailyPnl,
+      totalNetProfit: Math.round(totalNetProfit * 100) / 100,
+      totalGrossProfit: Math.round(totalGrossProfit * 100) / 100,
+      bestDay: bestDay ? { date: bestDay.date, pnl: bestDay.pnl } : null,
+      consistencyRatio,
+      grossConsistencyRatio,
+      tradingDays: dailyPnl.length,
+    });
+  } catch (error) {
+    console.error('Consistency analytics error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;

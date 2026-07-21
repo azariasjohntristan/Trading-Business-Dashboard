@@ -53,7 +53,7 @@ export default function Settings() {
         <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3 card-hover">
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Last Import</p>
           {lastImport ? (
-            <><p className="text-xs font-medium mt-1">{lastImport.filename}</p><p className="text-[10px] text-muted-foreground">{new Date(lastImport.importedAt).toLocaleString()}</p></>
+            <><p className="text-xs font-medium mt-1">{lastImport.filename}</p><p className="text-[10px] text-muted-foreground">{new Date(lastImport.importedAt).toLocaleString('en-US', { timeZone: 'America/New_York' })}</p></>
           ) : <p className="text-xs text-muted-foreground mt-1">No imports yet</p>}
         </div>
       </div>

@@ -18,6 +18,7 @@ interface TradingCalendarProps {
 
 export function TradingCalendar({ days, selectedDate, onSelect, showDetails = true, month: controlledMonth, year: controlledYear, onMonthChange }: TradingCalendarProps) {
   const today = new Date();
+  const todayStr = today.toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
   const [internalYear, setInternalYear] = useState(today.getFullYear());
   const [internalMonth, setInternalMonth] = useState(today.getMonth());
 
@@ -80,7 +81,7 @@ export function TradingCalendar({ days, selectedDate, onSelect, showDetails = tr
             {row.map((cell) => {
               const dd = pnlMap.get(cell.dateStr);
               const isSelected = selectedDate === cell.dateStr;
-              const isToday = cell.dateStr === today.toISOString().split('T')[0];
+              const isToday = cell.dateStr === todayStr;
 
               return (
                 <button
