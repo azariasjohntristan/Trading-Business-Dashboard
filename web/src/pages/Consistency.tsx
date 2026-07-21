@@ -148,7 +148,7 @@ export default function Consistency() {
               <tbody>
                 {data.dailyPnl.map((d) => (
                   <tr key={d.date} className={cn('border-t border-border/40', d.pnl > 0 && bestDay && d.date === bestDay.date ? 'bg-amber-500/5' : '')}>
-                    <td className="px-3 py-2 font-medium">{new Date(d.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/New_York' })}</td>
+                    <td className="px-3 py-2 font-medium">{new Date(d.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/New_York' })}</td>
                     <td className={cn('px-3 py-2 text-right font-bold tabular-nums', d.pnl >= 0 ? 'text-success' : 'text-destructive')}>{formatPnl(d.pnl)}</td>
                     <td className="px-3 py-2 text-right tabular-nums">{data.totalNetProfit > 0 ? `${Math.round((d.pnl / data.totalNetProfit) * 10000) / 100}%` : '---'}</td>
                     <td className="px-3 py-2 text-right">{bestDay && d.date === bestDay.date ? <span className="text-xs text-amber-500 font-medium">★ Best</span> : ''}</td>
@@ -172,7 +172,7 @@ function StatusCard({ label, value, date, isPnl, status, subtitle }: { label: st
     <div className="rounded border border-[hsl(var(--tv-border))] bg-[hsl(var(--tv-surface))] p-3 card-hover">
       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
       <p className={cn('text-lg md:text-xl font-bold tabular-nums mt-1', statusColor || (isPnl && (negative ? 'text-destructive' : 'text-success')))}>{value}</p>
-      {date && <p className="text-[9px] text-muted-foreground mt-0.5">{new Date(date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/New_York' })}</p>}
+      {date && <p className="text-[9px] text-muted-foreground mt-0.5">{new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/New_York' })}</p>}
       {subtitle && <p className="text-[9px] text-muted-foreground mt-0.5">{subtitle}</p>}
     </div>
   );

@@ -97,7 +97,7 @@ export function SessionDrawer({ session, onClose }: SessionDrawerProps) {
 
   const { date, totalPnl, totalTrades, wins, winRate, profitFactor, avgWinner, avgLoser, bestTrade, worstTrade, avgHoldMinutes, firstTradeTime, lastTradeTime, trades } = session;
   const positive = totalPnl >= 0;
-  const dayLabel = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' });
+  const dayLabel = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' });
 
   const sortedTrades = [...trades].sort((a, b) => new Date(a.boughtTimestamp).getTime() - new Date(b.boughtTimestamp).getTime());
 

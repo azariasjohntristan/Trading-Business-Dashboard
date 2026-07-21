@@ -16,7 +16,7 @@ export function SessionCard({ session, onClick, selected, onDelete }: SessionCar
   const dayLink = getDayScreenshotLink(date);
   const ssStatus = dayLink ? 'complete' : screenshotStatus;
   const positive = totalPnl >= 0;
-  const dayName = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' });
+  const dayName = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' });
   const symbols = [...new Set(trades.map(t => t.symbol))].join(', ');
   const ssDot = ssStatus === 'complete' ? 'bg-success' : ssStatus === 'partial' ? 'bg-amber-500' : 'bg-muted-foreground';
 
